@@ -23,8 +23,6 @@ public class FilesController : Controller
     [HttpGet]
     public async Task<IActionResult> ViewAllFiles()
     {
-        var claims = HttpContext.User.Claims;
-
         var files = await _cloudStorageManager.GetAllFiles();
 
         var filesToView = _mapper.Map<IEnumerable<File>, IEnumerable<FileViewModel>>(files);
