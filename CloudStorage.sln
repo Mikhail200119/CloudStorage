@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStorage.BLL", "CloudStorage.BLL\CloudStorage.BLL.csproj", "{E416F5E1-2BD1-4998-86B7-F2A190E39209}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStorage.Common", "CloudStorage.Common\CloudStorage.Common.csproj", "{56709C23-8C41-4E7E-8E49-00D94B4554EE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStorage.DAL", "CloudStorage.DAL\CloudStorage.DAL.csproj", "{6E46F3C6-FAA6-4B1F-98ED-B6A985C4791F}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "CloudStorage.Database", "CloudStorage.Database\CloudStorage.Database.sqlproj", "{27593344-5CDF-42DF-AE13-7ABACF010165}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStorage.Web", "CloudStorage.Web\CloudStorage.Web.csproj", "{3A44BE44-DF13-4E2C-9BFB-73A76A01C3BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E416F5E1-2BD1-4998-86B7-F2A190E39209}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E416F5E1-2BD1-4998-86B7-F2A190E39209}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E416F5E1-2BD1-4998-86B7-F2A190E39209}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E416F5E1-2BD1-4998-86B7-F2A190E39209}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56709C23-8C41-4E7E-8E49-00D94B4554EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56709C23-8C41-4E7E-8E49-00D94B4554EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56709C23-8C41-4E7E-8E49-00D94B4554EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56709C23-8C41-4E7E-8E49-00D94B4554EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E46F3C6-FAA6-4B1F-98ED-B6A985C4791F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E46F3C6-FAA6-4B1F-98ED-B6A985C4791F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E46F3C6-FAA6-4B1F-98ED-B6A985C4791F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E46F3C6-FAA6-4B1F-98ED-B6A985C4791F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27593344-5CDF-42DF-AE13-7ABACF010165}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{3A44BE44-DF13-4E2C-9BFB-73A76A01C3BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A44BE44-DF13-4E2C-9BFB-73A76A01C3BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A44BE44-DF13-4E2C-9BFB-73A76A01C3BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A44BE44-DF13-4E2C-9BFB-73A76A01C3BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCEB5CEB-ED79-4935-8861-5846643E97E5}
+	EndGlobalSection
+EndGlobal
