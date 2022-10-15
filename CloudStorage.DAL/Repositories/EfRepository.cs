@@ -1,39 +1,52 @@
-﻿using CloudStorage.DAL.Entities;
+﻿using CloudStorage.DAL.Entities.Interfaces;
+using CloudStorage.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.DAL.Repositories;
 
-public class EfRepository<TEntity> where TEntity : class, IEntity, new()
+public abstract class EfRepository<TEntity> : IDatabaseExecutable<TEntity> where TEntity : class, IEntity, new()
 {
-    protected readonly DbContext _context;
-    protected readonly DbSet<TEntity> _table;
+    protected readonly DbContext Context;
+    protected readonly DbSet<TEntity> Table;
 
-    public EfRepository(DbContext context)
+    protected EfRepository(DbContext context)
     {
-        _context = context;
-        _table = _context.Set<TEntity>();
+        Context = context;
+        Table = Context.Set<TEntity>();
     }
 
     public async Task<IEnumerable<TEntity>> GetAllAsync(bool trackEntities = false)
     {
-        var query = trackEntities == false ? _table.AsNoTracking() : _table;
+        var query = trackEntities == false ? Table.AsNoTracking() : Table;
 
         return await query.ToListAsync();
     }
 
-    public virtual async Task CreateAsync(TEntity entity) => await _table.AddAsync(entity);
+    public virtual async Task CreateAsync(TEntity entity) => await Table.AddAsync(entity);
 
-    public virtual void Update(TEntity entity) => _table.Update(entity);
+    public virtual void Update(TEntity entity) => Table.Update(entity);
 
-    public virtual void Delete(TEntity entity) => _table.Remove(entity);
+    public virtual void Delete(TEntity entity) => Table.Remove(entity);
 
     public virtual void Delete(int id)
     {
-        var entity = _context.ChangeTracker
+        var entity = Context.ChangeTracker
             .Entries<TEntity>()
             .FirstOrDefault(entry => entry.Entity.Id == id)
             ?.Entity ?? new TEntity { Id = id };
 
-        _table.Remove(entity);
+        Table.Remove(entity);
+    }
+
+    public async Task<TEntity> ExecuteAsync(Func<DbSet<TEntity>, TEntity> func)
+    {
+        var result = new TEntity();
+
+        await Task.Run(() =>
+        {
+            result = func(Table);
+        });
+
+        return result;
     }
 }

@@ -1,10 +1,11 @@
-﻿using CloudStorage.DAL.Repositories;
+﻿using CloudStorage.DAL.Repositories.Interfaces;
 
 namespace CloudStorage.DAL;
 
 public interface ICloudStorageUnitOfWork
 {
-    IFilesRepository Files { get; }
+    IFileDescriptionRepository FileDescription { get; }
+    IFileContentRepository FileContent { get; }
 
     Task SaveChangesAsync();
 }

@@ -6,4 +6,6 @@ public class FileViewModel
     public string Name { get; set; }
     public byte[] Content { get; set; }
     public string UserName { get; set; }
+
+    public string ContentType { get; set; }
 }

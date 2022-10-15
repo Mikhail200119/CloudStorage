@@ -11,9 +11,12 @@ public class FileProfile : Profile
     public FileProfile()
     {
         CreateMap<FileCreateModel, FileCreateData>()
-            .ForMember(dest => dest.Name, expression => expression.MapFrom(src => src.FormFile.FileName))
-            .ForMember(dest => dest.Content, opt => 
-                opt.MapFrom(src => src.FormFile.ToByteArray()));
+            .ForMember(dest => dest.Name, 
+                opt => opt.MapFrom(src => src.FormFile.FileName))
+            .ForMember(dest => dest.Content, opt =>
+                opt.MapFrom(src => src.FormFile.ToByteArray()))
+            .ForMember(dest => dest.ContentType, 
+                opt => opt.MapFrom(src => src.FormFile.ContentType));
 
         CreateMap<FileUpdateModel, FileUpdateData>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FormFile.Name))

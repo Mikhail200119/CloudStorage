@@ -14,7 +14,7 @@
     <RootNamespace>CloudStorage.Database</RootNamespace>
     <AssemblyName>CloudStorage.Database</AssemblyName>
     <ModelCollation>1033,CI</ModelCollation>
-    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DefaultFileStructure>BySchema</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetLanguage>CS</TargetLanguage>
@@ -59,9 +59,9 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="dbo\" />
-    <Folder Include="dbo\Tables\" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="dbo\Tables\File.sql" />
+    <Build Include="dbo\FileDescription.sql" />
+    <Build Include="dbo\FileContent.sql" />
   </ItemGroup>
 </Project>

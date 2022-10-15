@@ -1,11 +1,10 @@
-﻿using System.Security.Claims;
-using System.Text.RegularExpressions;
-using CloudStorage.BLL.Models;
+﻿using CloudStorage.BLL.Models;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace CloudStorage.BLL.Services;
 
-public class UserService : IUserService
+public sealed class UserService : IUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 

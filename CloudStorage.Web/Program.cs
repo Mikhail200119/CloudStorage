@@ -1,10 +1,9 @@
 using CloudStorage.BLL.MappingProfiles;
 using CloudStorage.BLL.Services;
 using CloudStorage.DAL;
+using CloudStorage.Web.Areas.Identity.Data;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using CloudStorage.Web.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ApplicationContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationContextConnection' not found.");
@@ -25,7 +24,8 @@ builder.WebHost.ConfigureServices(services =>
         .AddTransient<ICloudStorageUnitOfWork, CloudStorageUnitOfWork>()
         .AddTransient<IUserService, UserService>()
         .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
-        .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CloudStorageDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"));
+        .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder => 
+            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CloudStorageDatabase;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"));
 
     services.AddAutoMapper(
         typeof(FilesMappingProfile),

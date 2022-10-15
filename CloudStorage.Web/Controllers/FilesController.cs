@@ -23,7 +23,7 @@ public class FilesController : Controller
     [HttpGet]
     public async Task<IActionResult> ViewAllFiles()
     {
-        var files = await _cloudStorageManager.GetAllFiles();
+        var files = await _cloudStorageManager.GetAllFilesAsync();
 
         var filesToView = _mapper.Map<IEnumerable<File>, IEnumerable<FileViewModel>>(files);
 
@@ -39,8 +39,6 @@ public class FilesController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(FileCreateModel file)
     {
-        file.UserName = "mikhail";
-
         var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
 
         await _cloudStorageManager.CreateAsync(fileCreateData);
@@ -58,11 +56,19 @@ public class FilesController : Controller
         return RedirectToAction(nameof(ViewAllFiles));
     }
 
-    [HttpDelete]
-    public IActionResult Delete(int id)
+    [HttpPost]
+    public async Task<IActionResult> Delete(int id)
     {
-        _cloudStorageManager.Delete(id);
+        await _cloudStorageManager.DeleteAsync(id);
 
         return RedirectToAction(nameof(ViewAllFiles));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetFile(int id, string contentType)
+    {
+        var content = await _cloudStorageManager.GetContentByFileDescriptionIdAsync(id);
+
+        return File(content, contentType);
     }
 }

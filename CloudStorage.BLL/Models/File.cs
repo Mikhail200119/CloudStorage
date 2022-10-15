@@ -9,4 +9,6 @@ public class File
     public byte[] Content { get; set; }
 
     public string UserName { get; set; }
+
+    public string ContentType { get; set; }
 }

@@ -9,6 +9,9 @@ public static class FormFileExtensions
         var stream = new MemoryStream();
         file.CopyTo(stream);
 
-        return stream.ToArray();
+        var streamAsArray = stream.ToArray();
+        stream.Dispose();
+
+        return streamAsArray;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace CloudStorage.DAL.Entities;
+﻿namespace CloudStorage.DAL.Entities.Interfaces;
 
 public interface IEntity
 {
