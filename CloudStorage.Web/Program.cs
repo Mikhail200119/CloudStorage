@@ -1,11 +1,14 @@
 using CloudStorage.BLL.MappingProfiles;
+using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services;
+using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.Web.Areas.Identity.Data;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 var connectionString = builder.Configuration.GetConnectionString("ApplicationContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
@@ -19,13 +22,25 @@ builder.Services.AddControllersWithViews();
 
 builder.WebHost.ConfigureServices(services =>
 {
+    var databaseConnectionString = builder.Configuration.GetConnectionString("CloudStorageDatabaseConnection");
+
     services
         .AddTransient<ICloudStorageManager, CloudStorageManager>()
         .AddTransient<ICloudStorageUnitOfWork, CloudStorageUnitOfWork>()
         .AddTransient<IUserService, UserService>()
+        .AddSingleton<IDataHasher, Sha1DataHasher>()
         .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
-        .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder => 
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CloudStorageDatabase;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"));
+        .AddTransient<IFileStorageService, FileStorageService>()
+        .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder =>
+            optionsBuilder.UseSqlServer(databaseConnectionString));
+
+    var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();
+
+    services.Configure<FileStorageOptions>(opt =>
+    {
+        opt.FilesDirectoryPath = Path.Combine(builder.Environment.WebRootPath, fileStorageOptions.FilesDirectoryPath);
+        opt.FFmpegExecutablesPath = Path.Combine(builder.Environment.WebRootPath, fileStorageOptions.FFmpegExecutablesPath);
+    });
 
     services.AddAutoMapper(
         typeof(FilesMappingProfile),

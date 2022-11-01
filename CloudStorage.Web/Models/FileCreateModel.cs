@@ -1,6 +1,9 @@
-﻿namespace CloudStorage.Web.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CloudStorage.Web.Models;
 
 public class FileCreateModel
 {
+    [Required]
     public IFormFile FormFile { get; set; }
 }

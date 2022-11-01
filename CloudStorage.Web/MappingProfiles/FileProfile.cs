@@ -2,7 +2,6 @@
 using CloudStorage.BLL.Models;
 using CloudStorage.Common.Extensions;
 using CloudStorage.Web.Models;
-using File = CloudStorage.BLL.Models.File;
 
 namespace CloudStorage.Web.MappingProfiles;
 
@@ -23,6 +22,6 @@ public class FileProfile : Profile
             .ForMember(dest => dest.Content, opt =>
                 opt.MapFrom(src => src.FormFile.ToByteArray()));
             
-        CreateMap<File, FileViewModel>();
+        CreateMap<FileDescription, FileViewModel>();
     }
 }

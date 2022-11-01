@@ -72,7 +72,7 @@ namespace CloudStorage.Web.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("UploadedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -98,7 +98,7 @@ namespace CloudStorage.Web.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("ProvidedName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -214,14 +214,14 @@ namespace CloudStorage.Web.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("ProvidedName")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserId", "LoginProvider", "Name");
+                    b.HasKey("UserId", "LoginProvider", "ProvidedName");
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });

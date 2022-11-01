@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
-using CloudStorage.BLL.Services;
+using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using File = CloudStorage.BLL.Models.File;
+using Xabe.FFmpeg;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -25,23 +25,23 @@ public class FilesController : Controller
     {
         var files = await _cloudStorageManager.GetAllFilesAsync();
 
-        var filesToView = _mapper.Map<IEnumerable<File>, IEnumerable<FileViewModel>>(files);
+        var filesToView = _mapper.Map<IEnumerable<FileDescription>, IEnumerable<FileViewModel>>(files);
 
         return View(filesToView);
     }
 
     [HttpGet]
-    public IActionResult Create()
-    {
-        return View(new FileCreateModel());
-    }
+    public IActionResult Create() => View(new FileCreateModel());
 
     [HttpPost]
     public async Task<IActionResult> Create(FileCreateModel file)
     {
-        var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
+        if (ModelState.IsValid)
+        {
+            var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
 
-        await _cloudStorageManager.CreateAsync(fileCreateData);
+            await _cloudStorageManager.CreateAsync(fileCreateData);
+        }
 
         return RedirectToAction(nameof(ViewAllFiles));
     }
@@ -65,7 +65,7 @@ public class FilesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetFile(int id, string contentType)
+    public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
         var content = await _cloudStorageManager.GetContentByFileDescriptionIdAsync(id);
 

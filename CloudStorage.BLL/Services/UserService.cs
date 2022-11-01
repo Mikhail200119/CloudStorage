@@ -1,4 +1,5 @@
 ﻿using CloudStorage.BLL.Models;
+using CloudStorage.BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -18,6 +19,6 @@ public sealed class UserService : IUserService
     private static User BuildUserModel(IEnumerable<Claim> claims) =>
         new()
         {
-            Email = claims.FirstOrDefault(claim=>claim.Type.EndsWith("emailaddress"))?.Value ?? throw new ApplicationException()
+            Email = claims.FirstOrDefault(claim => claim.Type.EndsWith("emailaddress"))?.Value ?? throw new ApplicationException()
         };
 }

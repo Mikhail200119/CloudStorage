@@ -24,14 +24,13 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
         var files = trackEntities ? Table : Table.AsNoTracking();
 
         return await files
-            .Where(file => file.UserName == email)
+            .Where(file => file.UploadedBy == email)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<string>> GetContentHashesAsync(string userEmail)
-    {
-        return await Table
+    public async Task<IEnumerable<string>> GetContentHashesAsync(string userEmail) =>
+        await Table
+            .Where(file => file.UploadedBy == userEmail)
             .Select(file => file.ContentHash)
             .ToListAsync();
-    }
 }

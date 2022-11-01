@@ -16,3 +16,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.dropdown-menu {
+    max-height: 280px;
+    overflow-y: auto;
+}

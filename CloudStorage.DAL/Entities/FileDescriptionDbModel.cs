@@ -15,9 +15,13 @@ public class FileDescriptionDbModel : IEntity
 
     public string ContentType { get; set; }
 
-    public string UserName { get; set; }
+    public int SizeInBytes { get; set; }
+
+    public DateTime CreatedDate { get; set; }
 
     public string ContentHash { get; set; }
 
-    public virtual FileContentDbModel FileContent { get; set; }
+    public string UploadedBy { get; set; }
+
+    public byte[]? Preview { get; set; }
 }
