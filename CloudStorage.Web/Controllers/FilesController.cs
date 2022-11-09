@@ -4,7 +4,6 @@ using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Xabe.FFmpeg;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -67,7 +66,7 @@ public class FilesController : Controller
     [HttpGet]
     public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
-        var content = await _cloudStorageManager.GetContentByFileDescriptionIdAsync(id);
+        var content = await _cloudStorageManager.GetFileContentAsync(id);
 
         return File(content, contentType);
     }

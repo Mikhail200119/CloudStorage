@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.DAL.Repositories;
 
+
 public abstract class EfRepository<TEntity> : IDatabaseExecutable<TEntity> where TEntity : class, IEntity, new()
 {
     protected readonly DbContext Context;
@@ -42,10 +43,7 @@ public abstract class EfRepository<TEntity> : IDatabaseExecutable<TEntity> where
     {
         var result = new TEntity();
 
-        await Task.Run(() =>
-        {
-            result = func(Table);
-        });
+        await Task.Run(() => result = func(Table));
 
         return result;
     }

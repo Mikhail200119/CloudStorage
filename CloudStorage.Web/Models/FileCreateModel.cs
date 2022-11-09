@@ -6,4 +6,7 @@ public class FileCreateModel
 {
     [Required]
     public IFormFile FormFile { get; set; }
+
+    [MaxLength(20)]
+    public string FolderName { get; set; }
 }
