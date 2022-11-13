@@ -30,7 +30,7 @@ public class FilesController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create() => View(new FileCreateModel());
+    public IActionResult Create([FromQuery] string folderName) => View(new FileCreateModel { FolderName = folderName });
 
     [HttpPost]
     public async Task<IActionResult> Create(FileCreateModel file)
