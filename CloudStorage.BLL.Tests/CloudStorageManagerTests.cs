@@ -59,7 +59,7 @@ namespace CloudStorage.BLL.Tests
                 });
 
             // Act
-            var result = await _cloudStorageManager.CreateAsync(fileCreateData);
+            var result = await _cloudStorageManager.CreateFileAsync(fileCreateData);
 
             // Assert
             var expectedResult = new FileDescription

@@ -25,6 +25,5 @@ public class FileDescriptionDbModel : IEntity
 
     public byte[]? Preview { get; set; }
 
-    public int? FileFolderId { get; set; }
-    public FileFolderDbModel FileFolder { get; set; }
+    public int FolderId { get; set; }
 }

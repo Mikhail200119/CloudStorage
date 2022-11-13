@@ -24,7 +24,7 @@ public class CloudStorageManager : ICloudStorageManager
         _dataHasher = dataHasher;
     }
 
-    public async Task<FileDescription> CreateAsync(FileCreateData newFile)
+    public async Task<FileDescription> CreateFileAsync(FileCreateData newFile)
     {
         var fileDbModel = _mapper.Map<FileCreateData, FileDescriptionDbModel>(newFile);
         fileDbModel.UploadedBy = _userService.Current.Email;
@@ -67,7 +67,7 @@ public class CloudStorageManager : ICloudStorageManager
         return content;
     }
 
-    public async Task<FileDescription> UpdateAsync(FileUpdateData existingFile)
+    public async Task<FileDescription> UpdateFileAsync(FileUpdateData existingFile)
     {
         var fileDbModel = _mapper.Map<FileUpdateData, FileDescriptionDbModel>(existingFile);
 
@@ -79,7 +79,7 @@ public class CloudStorageManager : ICloudStorageManager
         return file;
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteFileAsync(int id)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
 
@@ -93,9 +93,40 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
         var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
-
+        var foldersDbModel = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersByIdsAsync(filesDbModel.Select(file => file.FolderId));
+        var folders = _mapper.Map<IEnumerable<FileFolderDbModel>, IEnumerable<FileFolder>>(foldersDbModel);
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
+        foreach (var fileDescription in files)
+        {
+            fileDescription.Folder = folders.SingleOrDefault(folder => folder.Id == fileDescription.Folder.Id);
+        }
+
         return files;
+    }
+
+    public async Task CreateFolderAsync(FileFolderCreateData folder)
+    {
+        var folderDbModel = _mapper.Map<FileFolderCreateData, FileFolderDbModel>(folder);
+
+        await _cloudStorageUnitOfWork.FileFolder.CreateAsync(folderDbModel);
+
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateFolderAsync(FileFolderUpdateData folder)
+    {
+        var folderDbModel = _mapper.Map<FileFolderUpdateData, FileFolderDbModel>(folder);
+
+        _cloudStorageUnitOfWork.FileFolder.Update(folderDbModel);
+
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteFolderAsync(int id)
+    {
+        _cloudStorageUnitOfWork.FileFolder.Delete(id);
+
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
     }
 }

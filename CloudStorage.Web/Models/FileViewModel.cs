@@ -17,4 +17,6 @@ public class FileViewModel
     public string ContentType { get; set; }
 
     public byte[] Preview { get; set; }
+
+    public FileFolderViewModel Folder { get; set; }
 }

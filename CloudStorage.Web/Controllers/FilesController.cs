@@ -30,7 +30,7 @@ public class FilesController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create([FromQuery] string folderName) => View(new FileCreateModel { FolderName = folderName });
+    public IActionResult Create([FromQuery] int folderId) => View(new FileCreateModel { FolderId = folderId });
 
     [HttpPost]
     public async Task<IActionResult> Create(FileCreateModel file)
@@ -39,7 +39,7 @@ public class FilesController : Controller
         {
             var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
 
-            await _cloudStorageManager.CreateAsync(fileCreateData);
+            await _cloudStorageManager.CreateFileAsync(fileCreateData);
         }
 
         return RedirectToAction(nameof(ViewAllFiles));
@@ -50,7 +50,7 @@ public class FilesController : Controller
     {
         var fileUpdateModel = _mapper.Map<FileUpdateModel, FileUpdateData>(file);
 
-        await _cloudStorageManager.UpdateAsync(fileUpdateModel);
+        await _cloudStorageManager.UpdateFileAsync(fileUpdateModel);
 
         return RedirectToAction(nameof(ViewAllFiles));
     }
@@ -58,7 +58,7 @@ public class FilesController : Controller
     [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {
-        await _cloudStorageManager.DeleteAsync(id);
+        await _cloudStorageManager.DeleteFileAsync(id);
 
         return RedirectToAction(nameof(ViewAllFiles));
     }

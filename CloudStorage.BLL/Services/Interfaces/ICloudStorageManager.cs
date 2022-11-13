@@ -4,9 +4,13 @@ namespace CloudStorage.BLL.Services.Interfaces;
 
 public interface ICloudStorageManager
 {
-    Task<FileDescription> CreateAsync(FileCreateData newFile);
+    Task<FileDescription> CreateFileAsync(FileCreateData newFile);
     Task<byte[]> GetFileContentAsync(int fileId);
-    Task<FileDescription> UpdateAsync(FileUpdateData existingFile);
-    Task DeleteAsync(int id);
+    Task<FileDescription> UpdateFileAsync(FileUpdateData existingFile);
+    Task DeleteFileAsync(int id);
     Task<IEnumerable<FileDescription>> GetAllFilesAsync();
+
+    Task CreateFolderAsync(FileFolderCreateData folder);
+    Task UpdateFolderAsync(FileFolderUpdateData folder);
+    Task DeleteFolderAsync(int id);
 }

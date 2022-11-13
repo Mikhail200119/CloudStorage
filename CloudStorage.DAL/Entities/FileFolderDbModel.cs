@@ -13,6 +13,4 @@ public class FileFolderDbModel : IEntity
 
     public int? ParentFolderId { get; set; }
     public FileFolderDbModel ParentFolder { get; set; }
-
-    public IEnumerable<FileDescriptionDbModel> FileDescriptions { get; set; }
 }

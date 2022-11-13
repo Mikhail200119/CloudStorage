@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using CloudStorage.BLL.MappingProfiles;
 using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services;
@@ -7,6 +6,7 @@ using CloudStorage.DAL;
 using CloudStorage.Web.Areas.Identity.Data;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +37,9 @@ builder.WebHost.ConfigureServices(services =>
             optionsBuilder.UseSqlServer(databaseConnectionString));
 
 
-    var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();
+    var fileStorageOptions = builder.Configuration
+        .GetSection(nameof(FileStorageOptions))
+        .Get<FileStorageOptions>();
 
     var aes = Aes.Create();
     aes.GenerateKey();
@@ -53,7 +55,9 @@ builder.WebHost.ConfigureServices(services =>
 
     services.AddAutoMapper(
         typeof(FilesMappingProfile),
-        typeof(FileProfile));
+        typeof(FileProfile),
+        typeof(FolderMappingProfile),
+        typeof(FoldersProfile));
 
     services.AddRazorPages();
     services.AddMvc();

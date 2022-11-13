@@ -17,4 +17,6 @@ public class FileDescription
     public int SizeInBytes { get; set; }
 
     public byte[] Preview { get; set; }
+
+    public FileFolder Folder { get; set; }
 }

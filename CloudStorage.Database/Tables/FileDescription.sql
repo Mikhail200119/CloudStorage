@@ -8,7 +8,9 @@
     [ContentHash]       NVARCHAR (150)  NOT NULL,
     [UploadedBy]        VARCHAR (100)   NOT NULL,
     [Preview]           VARBINARY (MAX) NULL,
-    CONSTRAINT [PK_FileDescription] PRIMARY KEY CLUSTERED ([FileDescriptionId] ASC)
+    [FileFolderId]      INT             NOT NULL
+    CONSTRAINT [PK_FileDescription] PRIMARY KEY CLUSTERED ([FileDescriptionId] ASC),
+    CONSTRAINT [FK_FileDescription_FileFolder] FOREIGN KEY ([FileFolderId]) REFERENCES [FileFolder]([FileFolderId])
 );
 
 
