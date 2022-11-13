@@ -98,7 +98,7 @@ public class CloudStorageManager : ICloudStorageManager
 
         await _cloudStorageUnitOfWork.SaveChangesAsync();
 
-        _fileStorageService.Delete(item.ProvidedName);
+        _fileStorageService.Delete(item.UniqueName);
     }
 
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
