@@ -6,12 +6,9 @@ public static class FormFileExtensions
 {
     public static byte[] ToByteArray(this IFormFile file)
     {
-        var stream = new MemoryStream();
+        using var stream = new MemoryStream();
         file.CopyTo(stream);
 
-        var streamAsArray = stream.ToArray();
-        stream.Dispose();
-
-        return streamAsArray;
+        return stream.ToArray();
     }
 }

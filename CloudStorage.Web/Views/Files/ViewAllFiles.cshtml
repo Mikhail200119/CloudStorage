@@ -11,8 +11,6 @@
         "Size",
         "Date"
     };
-
-    const string rootFolderName = "Files";
 }
 
 <div id="myOverlay"></div>
@@ -45,7 +43,17 @@
     }
 }
 
+
 <div id="files">
+    <div id="filesContainer">
+        @foreach (var fileDescription in Model)
+        {
+            
+        }
+    </div>
+</div>
+
+@*<div id="files">
     
     <div id="foldersLine" class="list-group-horizontal-lg foldersLine">
         <div id="folderInLine" class="list-inline-item folderInLine">
@@ -130,7 +138,7 @@
             }
         }
     </div>
-</div>
+</div>*@
 
 @*<div id="files">
     <div id="filesContainer" class="list-group-horizontal-lg">

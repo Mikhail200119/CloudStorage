@@ -32,7 +32,6 @@ public class AesEncryptor : IAesEncryptor
     {
         var iv = new byte[16];
         var aes = Aes.Create();
-        //aes.Key = Encoding.UTF8.GetBytes(_encryptionOptions.EncryptionKey);
         aes.Key = _encryptionOptions.EncryptionKey;
         aes.IV = iv;
         
