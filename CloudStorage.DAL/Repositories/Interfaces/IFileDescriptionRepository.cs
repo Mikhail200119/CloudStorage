@@ -12,4 +12,5 @@ public interface IFileDescriptionRepository
     void Delete(int id);
     Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false);
     Task<IEnumerable<string>> GetContentHashesAsync(string userEmail);
+    Task<bool> ContentHashExistAsync(string contentHash);
 }
