@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CloudStorage.BLL.Exceptions;
 using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
@@ -29,6 +30,13 @@ public class CloudStorageManager : ICloudStorageManager
         var fileDbModel = _mapper.Map<FileCreateData, FileDescriptionDbModel>(newFile);
         fileDbModel.UploadedBy = _userService.Current.Email;
         fileDbModel.ContentHash = _dataHasher.HashData(newFile.Content);
+
+        var suchContentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExistAsync(fileDbModel.ContentHash);
+
+        if (suchContentHashExist)
+        {
+            throw new FileContentDuplicationException("A file with such content is already exist.");
+        }
 
         await _fileStorageService.UploadAsync(fileDbModel.UniqueName, newFile.Content);
 
