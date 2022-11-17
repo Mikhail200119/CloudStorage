@@ -35,6 +35,11 @@ public class FilesController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(FileCreateModel file)
     {
+        if (file.FolderId == 0)
+        {
+            file.FolderId = await GetRootFolderIdAsync();
+        }
+
         if (ModelState.IsValid)
         {
             var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
@@ -70,4 +75,5 @@ public class FilesController : Controller
 
         return File(content, contentType);
     }
+    private async Task<int> GetRootFolderIdAsync() => await _cloudStorageManager.GetRootFolderIdAsync();
 }

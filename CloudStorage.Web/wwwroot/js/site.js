@@ -4,10 +4,11 @@
 // Write your JavaScript code.
 
 function addNewFile(parameterName, controllerActionUrl) {
-    const currentFolderName = document
-        .querySelectorAll("div[id=textInFolderOfLine]")
-        .map(text => text.nodeValue)
-        .pop();
+    createNewFolder(parameterName, controllerActionUrl);
+}
 
-    window.location.href = `${controllerActionUrl}/${parameterName}=${currentFolderName}`;
+function createNewFolder(parameterName, controllerActionUrl) {
+    const currentFolderId = document.getElementById("currentFolderId").textContent;
+
+    window.location.href = `${controllerActionUrl}/${parameterName}=${currentFolderId}`;
 }

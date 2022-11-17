@@ -92,17 +92,18 @@ public class CloudStorageManager : ICloudStorageManager
 
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
-        var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
-        var foldersDbModel = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersByIdsAsync(filesDbModel.Select(file => file.FolderId));
-        var folders = _mapper.Map<IEnumerable<FileFolderDbModel>, IEnumerable<FileFolder>>(foldersDbModel);
-        var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
+        var allFiles = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
+        var allFolders = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersByIdsAsync(allFiles.Select(file => file.FolderId));
 
-        foreach (var fileDescription in files)
+        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(allFiles);
+        var fileFolders = _mapper.Map<IEnumerable<FileFolderDbModel>, IEnumerable<FileFolder>>(allFolders);
+
+        foreach (var file in fileDescriptions)
         {
-            fileDescription.Folder = folders.SingleOrDefault(folder => folder.Id == fileDescription.Folder.Id);
+            file.Folder = fileFolders.Single(folder => folder.Id == file.Folder.Id);
         }
 
-        return files;
+        return fileDescriptions;
     }
 
     public async Task CreateFolderAsync(FileFolderCreateData folder)
@@ -129,4 +130,6 @@ public class CloudStorageManager : ICloudStorageManager
 
         await _cloudStorageUnitOfWork.SaveChangesAsync();
     }
+
+    public async Task<int> GetRootFolderIdAsync() => await _cloudStorageUnitOfWork.FileFolder.GetRootFolderIdAsync();
 }

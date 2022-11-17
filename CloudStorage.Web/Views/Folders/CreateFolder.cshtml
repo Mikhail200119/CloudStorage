@@ -1,0 +1,7 @@
+﻿@model CloudStorage.Web.Models.FileFolderCreateModel
+
+<form asp-controller="Folders" asp-action="CreateFolder" method="post">
+    <input asp-for="Name" name="Name" type="text" placeholder="type folder name..." class="form-control"/>
+    <input asp-for="ParentFolderId" name="ParentFolderId" type="hidden"/>
+    <button type="submit">Create</button>
+</form>

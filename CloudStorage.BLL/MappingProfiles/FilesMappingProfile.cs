@@ -21,6 +21,8 @@ public class FilesMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Content.Length));
 
         CreateMap<FileUpdateData, FileDescriptionDbModel>();
-        CreateMap<FileDescriptionDbModel, FileDescription>();
+        CreateMap<FileDescriptionDbModel, FileDescription>()
+            .ForPath(dest => dest.Folder.Id,
+                opt => opt.MapFrom(src => src.FolderId));
     }
 }

@@ -11,6 +11,14 @@
         "Size",
         "Date"
     };
+
+    var folders = Model
+        .Select(file => file.Folder)
+        .Distinct();
+
+    var rootFolder = folders.FirstOrDefault(folder => folder.ParentFolderId is null);
+    var rootFolderName = rootFolder?.Name;
+    var rootFolderId = rootFolder?.Id;
 }
 
 <div id="myOverlay"></div>
@@ -43,17 +51,10 @@
     }
 }
 
+<span id="currentFolderId" class="visually-hidden">@rootFolderId</span>
+<span id="currentName" class="visually-hidden">@rootFolderId</span>
 
 <div id="files">
-    <div id="filesContainer">
-        @foreach (var fileDescription in Model)
-        {
-            
-        }
-    </div>
-</div>
-
-@*<div id="files">
     
     <div id="foldersLine" class="list-group-horizontal-lg foldersLine">
         <div id="folderInLine" class="list-inline-item folderInLine">
@@ -64,91 +65,31 @@
     </div>
 
     <div id="filesContainer" class="list-group-horizontal-lg">
-        @foreach (var folder in Model)
+        @foreach (var folder in folders)
         {
-            <div id="fileFolder" class="list-inline-item fileItem">
+            var cssClass = folder.ParentFolderId is null ? "list-inline-item fileItem" : "visually-hidden";
+
+            <div id="fileFolder" class="@cssClass">
                 <div id="selector">
                     <div class="fileImageBox">
-                        @if (folder.ParentFolderId is null)
-                        {
-                            <img src="folder icon.png"/>
-                        }
-                        else
-                        {
-                            <img src="folder icon.png" class="overflow-hidden"/>
-                        }
+                        <img src="folder icon.png" class="filePreviewImage"/>
                     </div>
                 </div>
 
-                <span id="folderId" class="overflow-hidden">@folder.Id</span>
-                <span id="folderName" class="overflow-hidden">@folder.Name</span>
-                <span id="parentFolderId" class="overflow-hidden">@folder.ParentFolderId</span>
+                <span id="folderId" class="visually-hidden">@folder.Id</span>
+                <span id="parentFolderId" class="visually-hidden">@folder.ParentFolderId</span>
+                <span id="folderName" class="fileName">@folder.ParentFolderId</span>
             </div>
-
-            @foreach (var file in folder.Files)
-            {
-
-                var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
-
-                var cssClass = folder.ParentFolderId is null ? "list-inline-item fileItem" : "overflow-hidden";
-
-                <div id="fileDescription" class="@cssClass" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')"
-                     aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
-
-                    <div id="selector">
-                        <div class="fileImageBox">
-
-                            @{
-                                string source;
-
-                                if (file.Preview.Length == 0)
-                                {
-                                    source = file.ContentType switch
-                                    {
-                                        FileContentTypes.Image.Png => "image icon.png",
-                                        FileContentTypes.Video.Mp4 => "video icon.jpg",
-                                        FileContentTypes.Text.Plain => "document icon.png",
-                                        _ => string.Empty
-                                        };
-                                }
-                                else
-                                {
-                                    source = GetPath(file.Preview);
-                                }
-                            }
-
-                            <img class="filePreviewImage" src="@source"/>
-
-                        </div>
-
-                        <br/>
-
-                        <span id="fileFolderId" class="overflow-hidden">@folder.Id</span>
-                        <span id="fileParentFolderId" class="overflow-hidden">@folder.ParentFolderId</span>
-                        <span id="fileName" class="fileName">@file.ProvidedName</span>
-                        <span id="fileSize" class="visually-hidden">@file.SizeInBytes</span>
-                        <span id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</span>
-
-                        <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
-                            <button type="submit" class="border-danger">Delete</button>
-                        </form>
-                    </div>
-
-                </div>
-            }
         }
-    </div>
-</div>*@
 
-@*<div id="files">
-    <div id="filesContainer" class="list-group-horizontal-lg">
         @foreach (var file in Model)
         {
+            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
 
-            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = fileFolder.Id, contentType = fileFolder.ContentType });
+            var cssClass = file.Folder.ParentFolderId is null ? "list-inline-item fileItem" : "visually-hidden";
 
-            <div id="fileDescription" class="list-inline-item fileItem" ondblclick="handleFileDoubleClick('@fileSrc', 
-    '@fileFolder.ContentType')" aria-label="@fileFolder.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
+            <div id="fileDescription" class="@cssClass" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')"
+                 aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
 
                 <div id="selector">
                     <div class="fileImageBox">
@@ -156,9 +97,9 @@
                         @{
                             string source;
 
-                            if (fileFolder.Preview.Length == 0)
+                            if (file.Preview.Length == 0)
                             {
-                                source = fileFolder.ContentType switch
+                                source = file.ContentType switch
                                 {
                                     FileContentTypes.Image.Png => "image icon.png",
                                     FileContentTypes.Video.Mp4 => "video icon.jpg",
@@ -168,22 +109,23 @@
                             }
                             else
                             {
-                                source = GetPath(fileFolder.Preview);
+                                source = GetPath(file.Preview);
                             }
                         }
 
-                        <img class="filePreviewImage" src="@source" />
+                        <img class="filePreviewImage" src="@source"/>
 
                     </div>
 
                     <br/>
 
-                    <div id="fileName" class="fileName">@fileFolder.ProvidedName</div>
+                    <span id="fileFolderId" class="visually-hidden">@file.Folder.Id</span>
+                    <span id="fileParentFolderId" class="visually-hidden">@file.Folder.ParentFolderId</span>
+                    <span id="fileName" class="fileName">@file.ProvidedName</span>
+                    <span id="fileSize" class="visually-hidden">@file.SizeInBytes</span>
+                    <span id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</span>
 
-                    <div id="fileSize" class="visually-hidden">@fileFolder.SizeInBytes</div>
-                    <div id="fileCreatedDate" class="visually-hidden">@fileFolder.CreatedDate.ToString("R")</div>
-
-                    <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@fileFolder.Id" method="post">
+                    <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
                         <button type="submit" class="border-danger">Delete</button>
                     </form>
                 </div>
@@ -191,15 +133,18 @@
             </div>
         }
     </div>
-</div>*@
+</div>
 
-@Html.ActionLink("Upload new file...", "Create", "Files")
+@*Html.ActionLink("Upload new file...", "Create", "Files")*@
+@*Html.ActionLink("Create new folder...", "CreateFolder", "Folders")*@
 
 @{
-    var createActionUrl = Url.Action("Create", "Files");
+    var createFileActionUrl = Url.Action("Create", "Files");
+    var createFolderActionUrl = Url.Action(controller: "Folders", action: "CreateFolder");
 }
 
-<button id="addNewFileButton" onclick="addNewFile('fileFolder', '@createActionUrl')">Upload new file</button>
+<button id="addNewFileButton" onclick="addNewFile('fileFolder', '@createFileActionUrl')">Upload new file</button>
+<button id="createNewFolderButton" onclick="createNewFolder('parentFolderId', '@createFolderActionUrl')">Create new folder</button>
 
 <script>
     document.getElementById("sortWayButton").textContent = "Date";

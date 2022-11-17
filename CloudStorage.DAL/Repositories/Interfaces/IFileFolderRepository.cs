@@ -9,4 +9,8 @@ public interface IFileFolderRepository
     void Update(FileFolderDbModel folder);
     Task<FileFolderDbModel> GetById(int id);
     Task<IEnumerable<FileFolderDbModel>> GetAllFoldersByIdsAsync(IEnumerable<int> ids);
+
+    Task<int> GetRootFolderIdAsync();
+
+    Task<IEnumerable<FileFolderDbModel>> GetAllFolders(string userEmail);
 }

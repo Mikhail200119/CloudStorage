@@ -11,6 +11,8 @@ public class FileFolderDbModel : IEntity
 
     public string Name { get; set; }
 
+    public string UserEmail { get; set; }
+
     public int? ParentFolderId { get; set; }
     public FileFolderDbModel ParentFolder { get; set; }
 }

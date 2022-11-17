@@ -24,4 +24,23 @@ public class FileFolderRepository : EfRepository<FileFolderDbModel>, IFileFolder
 
         return folders;
     }
+
+    public async Task<int> GetRootFolderIdAsync()
+    {
+        var table = Table.AsNoTracking();
+
+        var rootFolder = await table.FirstAsync(folder => folder.ParentFolderId == null);
+
+        return rootFolder.Id;
+    }
+
+    public async Task<IEnumerable<FileFolderDbModel>> GetAllFolders(string userEmail)
+    {
+        var table = Table.AsNoTracking();
+
+        return await table
+            .Where(folder => folder.UserEmail == userEmail)
+            .Where(folder => folder.UserEmail == null)
+            .ToListAsync();
+    }
 }

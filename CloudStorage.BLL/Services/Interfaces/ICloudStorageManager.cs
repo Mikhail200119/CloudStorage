@@ -13,4 +13,5 @@ public interface ICloudStorageManager
     Task CreateFolderAsync(FileFolderCreateData folder);
     Task UpdateFolderAsync(FileFolderUpdateData folder);
     Task DeleteFolderAsync(int id);
+    Task<int> GetRootFolderIdAsync();
 }

@@ -25,7 +25,6 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
 
         return await files
             .Where(file => file.UploadedBy == email)
-            .Include(file => file.FileFolder)
             .ToListAsync();
     }
 
