@@ -95,6 +95,8 @@ public class CloudStorageManager : ICloudStorageManager
         var allFiles = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
         var allFolders = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersByIdsAsync(allFiles.Select(file => file.FolderId));
 
+        var folders = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersAsync(_userService.Current.Email);
+
         var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(allFiles);
         var fileFolders = _mapper.Map<IEnumerable<FileFolderDbModel>, IEnumerable<FileFolder>>(allFolders);
 
@@ -132,4 +134,12 @@ public class CloudStorageManager : ICloudStorageManager
     }
 
     public async Task<int> GetRootFolderIdAsync() => await _cloudStorageUnitOfWork.FileFolder.GetRootFolderIdAsync();
+    public async Task<IEnumerable<FileFolder>> GetAllFoldersAsync()
+    {
+        var foldersDbModel = await _cloudStorageUnitOfWork.FileFolder.GetAllFoldersAsync(_userService.Current.Email);
+
+        var folders = _mapper.Map<IEnumerable<FileFolderDbModel>, IEnumerable<FileFolder>>(foldersDbModel);
+
+        return folders;
+    }
 }

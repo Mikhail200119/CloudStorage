@@ -12,5 +12,5 @@ public interface IFileFolderRepository
 
     Task<int> GetRootFolderIdAsync();
 
-    Task<IEnumerable<FileFolderDbModel>> GetAllFolders(string userEmail);
+    Task<IEnumerable<FileFolderDbModel>> GetAllFoldersAsync(string userEmail);
 }

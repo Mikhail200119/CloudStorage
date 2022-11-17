@@ -14,4 +14,5 @@ public interface ICloudStorageManager
     Task UpdateFolderAsync(FileFolderUpdateData folder);
     Task DeleteFolderAsync(int id);
     Task<int> GetRootFolderIdAsync();
+    Task<IEnumerable<FileFolder>> GetAllFoldersAsync();
 }

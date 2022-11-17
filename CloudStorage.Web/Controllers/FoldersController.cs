@@ -20,6 +20,15 @@ namespace CloudStorage.Web.Controllers
         [HttpGet]
         public IActionResult CreateFolder(int? parentFolderId) => View(new FileFolderCreateModel { ParentFolderId = parentFolderId });
 
+        [HttpGet]
+        public async Task<IEnumerable<FileFolderViewModel>> GetAllFoldersAsync()
+        {
+            var folders = await _cloudStorageManager.GetAllFoldersAsync();
+            var foldersViewModel = _mapper.Map<IEnumerable<FileFolder>, IEnumerable<FileFolderViewModel>>(folders);
+
+            return foldersViewModel;
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateFolderAsync(FileFolderCreateModel folder)
         {

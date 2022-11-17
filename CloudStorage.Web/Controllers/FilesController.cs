@@ -23,10 +23,18 @@ public class FilesController : Controller
     public async Task<IActionResult> ViewAllFiles()
     {
         var files = await _cloudStorageManager.GetAllFilesAsync();
+        var folders = await _cloudStorageManager.GetAllFoldersAsync();
 
         var filesToView = _mapper.Map<IEnumerable<FileDescription>, IEnumerable<FileViewModel>>(files);
+        var foldersToView = _mapper.Map<IEnumerable<FileFolder>, IEnumerable<FileFolderViewModel>>(folders);
 
-        return View(filesToView);
+        var fileStructure = new FileStructureViewModel
+        {
+            Files = filesToView,
+            Folders = foldersToView,
+        };
+
+        return View(fileStructure);
     }
 
     [HttpGet]

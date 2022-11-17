@@ -34,7 +34,7 @@ public class FileFolderRepository : EfRepository<FileFolderDbModel>, IFileFolder
         return rootFolder.Id;
     }
 
-    public async Task<IEnumerable<FileFolderDbModel>> GetAllFolders(string userEmail)
+    public async Task<IEnumerable<FileFolderDbModel>> GetAllFoldersAsync(string userEmail)
     {
         var table = Table.AsNoTracking();
 

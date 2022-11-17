@@ -2,7 +2,7 @@
 @using CloudStorage.Web.Helpers
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 
-@model IEnumerable<FileViewModel>
+@model FileStructureViewModel
 
 @{
     var sortMethods = new List<string>
@@ -12,9 +12,8 @@
         "Date"
     };
 
-    var folders = Model
-        .Select(file => file.Folder)
-        .Distinct();
+    var folders = Model.Folders;
+    var files = Model.Files;
 
     var rootFolder = folders.FirstOrDefault(folder => folder.ParentFolderId is null);
     var rootFolderName = rootFolder?.Name;
@@ -82,7 +81,7 @@
             </div>
         }
 
-        @foreach (var file in Model)
+        @foreach (var file in files)
         {
             var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
 
