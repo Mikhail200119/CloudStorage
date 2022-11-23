@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using CloudStorage.BLL.Exceptions;
+using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
@@ -29,19 +31,23 @@ public class CloudStorageManager : ICloudStorageManager
         fileDbModel.UploadedBy = _userService.Current.Email;
         fileDbModel.ContentHash = _dataHasher.HashData(newFile.Content);
 
+        var suchContentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExistAsync(fileDbModel.ContentHash);
+
+        if (suchContentHashExist)
+        {
+            throw new FileContentDuplicationException("A file with such content is already exist.");
+        }
+
         await _fileStorageService.UploadAsync(fileDbModel.UniqueName, newFile.Content);
 
-        switch (fileDbModel.ContentType)
+        if (ContentTypeDeterminant.IsImage(newFile.ContentType))
         {
-            case "video/mp4":
-            {
-                var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.UniqueName);
-                fileDbModel.Preview = _fileStorageService.CompressImage(thumbnail);
-                break;
-            }
-            case "image/png":
-                fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
-                break;
+            fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
+        }
+        else if (ContentTypeDeterminant.IsVideo(newFile.ContentType))
+        {
+            var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.UniqueName);
+            fileDbModel.Preview = _fileStorageService.CompressImage(thumbnail);
         }
 
         try
@@ -60,18 +66,9 @@ public class CloudStorageManager : ICloudStorageManager
         return file;
     }
 
-    public async Task<FileDescription> GetByIdAsync(int id)
+    public async Task<byte[]> GetFileContentAsync(int fileId)
     {
-        var fileDbModel = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
-
-        var file = _mapper.Map<FileDescriptionDbModel, FileDescription>(fileDbModel);
-
-        return file;
-    }
-
-    public async Task<byte[]> GetContentByFileDescriptionIdAsync(int id)
-    {
-        var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
+        var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
 
         var content = await _fileStorageService.GetAsync(item.UniqueName);
 

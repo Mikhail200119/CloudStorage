@@ -66,3 +66,20 @@
     width: 100%;
     background-color: blue;
 }
+
+.foldersLine {
+    height: 20px;
+    width: 100%;
+}
+
+.folderInLine {
+    height: inherit;
+    width: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.textInFolderOfLine {
+    height: inherit;
+    width: inherit;
+}

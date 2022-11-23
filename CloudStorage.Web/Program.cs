@@ -1,8 +1,10 @@
+using System.Security.Cryptography;
 using CloudStorage.BLL.MappingProfiles;
 using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
+using CloudStorage.Web;
 using CloudStorage.Web.Areas.Identity.Data;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
@@ -31,10 +33,15 @@ builder.WebHost.ConfigureServices(services =>
         .AddSingleton<IDataHasher, Sha1DataHasher>()
         .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
         .AddTransient<IFileStorageService, FileStorageService>()
+        .AddTransient<IAesEncryptor, AesEncryptor>()
         .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder =>
             optionsBuilder.UseSqlServer(databaseConnectionString));
 
+
     var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();
+
+    var aes = Aes.Create();
+    aes.GenerateKey();
 
     services.Configure<FileStorageOptions>(opt =>
     {
@@ -42,13 +49,16 @@ builder.WebHost.ConfigureServices(services =>
         opt.FFmpegExecutablesPath = Path.Combine(builder.Environment.WebRootPath, fileStorageOptions.FFmpegExecutablesPath);
     });
 
+    //services.Configure<FileEncryptionOptions>(builder.Configuration.GetSection(nameof(FileEncryptionOptions)));
+    services.Configure<FileEncryptionOptions>(opt => opt.EncryptionKey = aes.Key);
+
     services.AddAutoMapper(
         typeof(FilesMappingProfile),
         typeof(FileProfile));
 
     services.AddRazorPages();
     services.AddMvc();
-    services.AddControllersWithViews();
+    services.AddControllersWithViews(options => options.Filters.Add<ExceptionFilter>());
 });
 
 var app = builder.Build();
