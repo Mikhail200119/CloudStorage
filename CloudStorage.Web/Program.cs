@@ -3,7 +3,9 @@ using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
+using CloudStorage.Web;
 using CloudStorage.Web.Areas.Identity.Data;
+using CloudStorage.Web.Filters;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,7 +50,10 @@ builder.WebHost.ConfigureServices(services =>
 
     services.AddRazorPages();
     services.AddMvc();
-    services.AddControllersWithViews();
+    services.AddControllersWithViews(options =>
+    {
+        options.Filters.Add<ExceptionFilter>();
+    });
 });
 
 var app = builder.Build();

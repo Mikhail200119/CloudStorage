@@ -33,4 +33,6 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .Where(file => file.UploadedBy == userEmail)
             .Select(file => file.ContentHash)
             .ToListAsync();
+
+    public async Task<bool> ContentHashExist(string contentHash) => await Table.AnyAsync(file => file.ContentHash == contentHash);
 }
