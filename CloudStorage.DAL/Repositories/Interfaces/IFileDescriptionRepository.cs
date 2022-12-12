@@ -1,6 +1,4 @@
-﻿using CloudStorage.DAL.Entities;
-using CloudStorage.DAL.Entities.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using CloudStorage.DAL.Entities;
 
 namespace CloudStorage.DAL.Repositories.Interfaces;
 
@@ -11,6 +9,6 @@ public interface IFileDescriptionRepository
     void Update(FileDescriptionDbModel fileDescription);
     void Delete(int id);
     Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false);
-    Task<IEnumerable<string>> GetContentHashesAsync(string userEmail);
-    Task<bool> ContentHashExistAsync(string contentHash);
+    Task<bool> ContentHashExist(string contentHash, string userEmail);
+    Task<bool> FileNameExist(string providedFileName, string userEmail);
 }

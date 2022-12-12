@@ -1,8 +1,6 @@
-﻿using CloudStorage.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace CloudStorage.Controllers
+namespace CloudStorage.Web.Controllers
 {
     public class HomeController : Controller
     {
@@ -23,10 +21,9 @@ namespace CloudStorage.Controllers
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Info()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
     }
 }

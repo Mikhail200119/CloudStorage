@@ -1,11 +1,11 @@
 ﻿function onSortingFiles(element) {
-    const sortMethod = element.textContent;
+        const sortMethod = element.textContent;
 
     document.getElementById("sortWayButton").textContent = sortMethod;
 
     const files = document
         .getElementById("filesContainer")
-        .querySelectorAll("div[id=fileDescription]");
+        .querySelectorAll("div[class=fileItemBox]");
 
     const divs = [];
 
@@ -32,15 +32,20 @@
 
 function sortFilesByName(divs) {
     divs.sort((a, b) =>
-        a.getAttribute("aria-label")
-            .localeCompare(b.getAttribute("aria-label"))
+        a
+        .querySelector("div[id=fileDescription]")
+        .getAttribute("aria-label")
+        .localeCompare(b
+            .querySelector("div[id=fileDescription]")
+            .getAttribute("aria-label"))
     );
 }
 
 function sortFilesBySize(divs) {
     divs.sort((a, b) => {
-            const firstValue = parseInt(a.querySelector("div[id=fileSize]").textContent);
-            const secondValue = parseInt(b.querySelector("div[id=fileSize]").textContent);
+            const firstValue = parseInt(a.querySelector("div[id=fileDescription]").querySelector("div[id=fileSize]").textContent);
+            const secondValue = parseInt(b.querySelector("div[id=fileDescription]").querySelector("div[id=fileSize]")
+                .textContent);
 
             if (firstValue > secondValue) {
                 return 1;
@@ -57,8 +62,8 @@ function sortFilesBySize(divs) {
 
 function sortFilesByDate(divs) {
     divs.sort((a, b) => {
-        const firstDate = new Date(Date.parse(a.querySelector("div[id=fileCreatedDate]").textContent));
-        const secondDate = new Date(Date.parse(b.querySelector("div[id=fileCreatedDate]").textContent));
+        const firstDate = new Date(Date.parse(a.querySelector("div[id=fileDescription]").querySelector("div[id=fileCreatedDate]").textContent));
+        const secondDate = new Date(Date.parse(b.querySelector("div[id=fileDescription]").querySelector("div[id=fileCreatedDate]").textContent));
 
         if (firstDate > secondDate) {
             return 1;

@@ -5,6 +5,7 @@ using CloudStorage.BLL.Services;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.Web.Areas.Identity.Data;
+using CloudStorage.Web.Filters;
 using CloudStorage.Web.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,6 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationContext>();
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.WebHost.ConfigureServices(services =>
@@ -57,16 +57,17 @@ builder.WebHost.ConfigureServices(services =>
 
     services.AddRazorPages();
     services.AddMvc();
-    services.AddControllersWithViews();
+    services.AddControllersWithViews(options =>
+    {
+        options.Filters.Add<ExceptionFilter>();
+    });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

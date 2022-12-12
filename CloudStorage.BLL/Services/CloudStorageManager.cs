@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CloudStorage.BLL.Exceptions;
 using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
@@ -31,20 +31,15 @@ public class CloudStorageManager : ICloudStorageManager
         fileDbModel.UploadedBy = _userService.Current.Email;
         fileDbModel.ContentHash = _dataHasher.HashData(newFile.Content);
 
-        var suchContentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExistAsync(fileDbModel.ContentHash);
-
-        if (suchContentHashExist)
-        {
-            throw new FileContentDuplicationException("A file with such content is already exist.");
-        }
+        await ValidateFCreatedFile(fileDbModel);
 
         await _fileStorageService.UploadAsync(fileDbModel.UniqueName, newFile.Content);
 
-        if (ContentTypeDeterminant.IsImage(newFile.ContentType))
+        if (ContentTypeDeterminant.IsImage(fileDbModel.ContentType))
         {
             fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
         }
-        else if (ContentTypeDeterminant.IsVideo(newFile.ContentType))
+        else if (ContentTypeDeterminant.IsVideo(fileDbModel.ContentType))
         {
             var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.UniqueName);
             fileDbModel.Preview = _fileStorageService.CompressImage(thumbnail);
@@ -66,9 +61,18 @@ public class CloudStorageManager : ICloudStorageManager
         return file;
     }
 
-    public async Task<byte[]> GetFileContentAsync(int fileId)
+    public async Task<FileDescription> GetByIdAsync(int id)
     {
-        var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+        var fileDbModel = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
+
+        var file = _mapper.Map<FileDescriptionDbModel, FileDescription>(fileDbModel);
+
+        return file;
+    }
+
+    public async Task<byte[]> GetContentByFileDescriptionIdAsync(int id)
+    {
+        var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
 
         var content = await _fileStorageService.GetAsync(item.UniqueName);
 
@@ -105,5 +109,22 @@ public class CloudStorageManager : ICloudStorageManager
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
         return files;
+    }
+
+    private async Task ValidateFCreatedFile(FileDescriptionDbModel fileDbModel)
+    {
+        var contentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExist(fileDbModel.ContentHash, _userService.Current.Email);
+
+        if (contentHashExist)
+        {
+            throw new FileContentDuplicationException("A file with such content is already exist.");
+        }
+
+        var fileNameExist = await _cloudStorageUnitOfWork.FileDescription.FileNameExist(fileDbModel.ProvidedName, _userService.Current.Email);
+
+        if (fileNameExist)
+        {
+            throw new FileNameDuplicationException("A file with such name is already exist.");
+        }
     }
 }

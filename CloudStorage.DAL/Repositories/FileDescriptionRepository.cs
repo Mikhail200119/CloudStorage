@@ -1,4 +1,4 @@
-﻿using CloudStorage.DAL.Entities;
+using CloudStorage.DAL.Entities;
 using CloudStorage.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +17,12 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
         await base.CreateAsync(entity);
     }
 
-    public async Task<FileDescriptionDbModel?> GetByIdAsync(int id) => await Table.SingleOrDefaultAsync(file => file.Id == id);
+    public async Task<FileDescriptionDbModel?> GetByIdAsync(int id)
+    {
+        return await Table
+            .AsNoTracking()
+            .SingleOrDefaultAsync(file => file.Id == id);
+    }
 
     public async Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false)
     {
@@ -28,11 +33,11 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<string>> GetContentHashesAsync(string userEmail) =>
-        await Table
-            .Where(file => file.UploadedBy == userEmail)
-            .Select(file => file.ContentHash)
+    public async Task<bool> ContentHashExist(string contentHash, string userEmail) => await Table.AnyAsync(file => file.ContentHash == contentHash && file.UploadedBy == userEmail);
+    public async Task<bool> FileNameExist(string providedFileName, string userEmail) => await Table.AnyAsync(file => file.ProvidedName == providedFileName && file.UploadedBy == userEmail);
+    public async Task<IEnumerable<FileDescriptionDbModel>> GetAllFiles(Predicate<FileDescriptionDbModel> searchOption, string email, bool trackEntities = false)
+    {
+        return await Table.Where(file => searchOption(file))
             .ToListAsync();
-
-    public async Task<bool> ContentHashExistAsync(string contentHash) => await Table.AnyAsync(file => file.ContentHash == contentHash);
+    }
 }
