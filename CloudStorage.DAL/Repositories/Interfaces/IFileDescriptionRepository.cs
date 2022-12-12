@@ -1,4 +1,4 @@
-﻿using CloudStorage.DAL.Entities;
+using CloudStorage.DAL.Entities;
 
 namespace CloudStorage.DAL.Repositories.Interfaces;
 
