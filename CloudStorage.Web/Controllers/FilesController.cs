@@ -4,7 +4,6 @@ using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Xabe.FFmpeg;
 
 namespace CloudStorage.Web.Controllers;
 

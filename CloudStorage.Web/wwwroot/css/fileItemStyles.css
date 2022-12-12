@@ -7,7 +7,7 @@
     position: fixed;
     display: none;
     width: 100%;
-    height: 100%;
+    height:100%;
     top: 0;
     left: 0;
     right: 0;
@@ -29,40 +29,102 @@
     position: absolute;
     top: 5%;
     right: 2%;
+    border-radius: 50px;
+    transition: 0.1s;
+}
+
+#overlayCloseItem:hover {
+    background-color: gray;
+}
+
+.fileItemBox {
+    height: 190px;
+    width: 150px;
+    display: inline-grid;
 }
 
 .fileItem {
-    margin: 20px;
-    padding: 10px;
+    margin: 5px;
+    padding: 5px 5px 5px 9px;
     border: 1px solid red;
-    height: 160px;
-    width: 100px;
+    height: 150px;
+    width: inherit;
     max-width: 250px;
     display: inline-block;
+    border-radius: 13px;
+    transition: 0.3s;
+    overflow: hidden;
+}
+
+.fileItem:hover {
+    background-color: gray;
+    height: 180px;
+    transform: scale(1.1, 1.1);
 }
 
 .fileName {
     text-overflow: ellipsis;
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: hidden;
     font-size: 13px;
+    margin-top: 0;
 }
 
 .fileImageBox {
-    height: 60px;
-    width: 60px;
-    padding: 10px 10px 0 10px;
+    height: 120px;
+    width: 130px;
+    margin-bottom: 0;
 }
 
 .filePreviewImage {
-    padding-bottom: 5%;
     height: inherit;
     width: inherit;
-    max-width: inherit
+    max-width: inherit;
+    object-fit: contain;
+    margin-bottom: 0;
 }
 
-.fileSelected {
-    height: 100%;
-    width: 100%;
-    background-color: blue;
+.deleteButton {
+    border-radius: 13px;
+    font-size: 13px;
+    border-color: red;
+    transition: 0.1s;
+    margin: 5px 20px 0 35px;
+}
+
+.deleteButton:hover {
+    background-color: red;
+}
+
+.search-input {
+    border-radius: 13px;
+    border-color: red;
+    width: 400px;
+}
+
+.upload-button {
+    border-radius: 13px;
+    border-color: green;
+    transition: 0.4s;
+}
+
+.upload-button:hover {
+    background-color: green;
+}
+
+body {
+   /* background-image: url('/background.png');*/
+    user-select: none;
+}
+
+footer {
+    margin-top: -200%;
+}
+
+.list-group-horizontal-lg {
+
+}
+
+.list-inline-item {
+    display: inline-grid;
 }

@@ -1,15 +1,16 @@
 ﻿function onSearchInput(element) {
     document
-        .querySelectorAll("div[id=fileDescription]")
-        .forEach(fileDescription => {
-            const fileNameDiv = fileDescription.querySelector("div[id=fileName]");
+        .querySelectorAll("div[class=fileItemBox]")
+        .forEach(fileBox => {
+            const fileNameDiv = fileBox.querySelector("div[id=fileDescription]")
+                .querySelector("div[id=fileName]");
 
             if (fileNameDiv.innerText.includes(element.value)) {
-                if (fileDescription.getAttribute("hidden")) {
-                    fileDescription.removeAttribute("hidden");
+                if (fileBox.getAttribute("hidden")) {
+                    fileBox.removeAttribute("hidden");
                 }
             } else {
-                fileDescription.setAttribute("hidden", "hidden");
+                fileBox.setAttribute("hidden", "hidden");
             }
         });
 }

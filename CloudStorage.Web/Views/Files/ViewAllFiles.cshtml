@@ -16,7 +16,7 @@
 <div id="myOverlay"></div>
 
 <label>Search: </label>
-<input type="search" placeholder="Type file name..." oninput="onSearchInput(this)"/>
+<input class="search-input" type="search" placeholder="Type file name..." oninput="onSearchInput(this)"/>
 
 <br/>
 
@@ -49,60 +49,57 @@
         {
             var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
 
-            <div id="fileDescription" class="list-inline-item fileItem" ondblclick="handleFileDoubleClick('@fileSrc', 
-    '@file.ContentType')" aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
+            <div class="list-inline-item">
+                <div class="fileItemBox">
+                    <div id="fileDescription" class="fileItem" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
+                        <div class="fileImageBox">
 
-                <div id="selector">
-                    <div class="fileImageBox">
+                            @{
+                                string source;
 
-                        @{
-                            string source;
-
-                            if (file.Preview.Length == 0)
-                            {
-                                source = file.ContentType switch
+                                if (file.Preview.Length == 0)
                                 {
-                                    FileContentTypes.Image.Png => "image icon.png",
-                                    FileContentTypes.Video.Mp4 => "video icon.jpg",
-                                    FileContentTypes.Text.Plain => "document icon.png",
-                                    _ => string.Empty
-                                    };
+                                    source = file.ContentType switch
+                                    {
+                                        FileContentTypes.Image.Png => "image icon.png",
+                                        FileContentTypes.Video.Mp4 => "video icon.jpg",
+                                        FileContentTypes.Text.Plain => "document icon.png",
+                                        _ => string.Empty
+                                        };
+                                }
+                                else
+                                {
+                                    source = GetPath(file.Preview);
+                                }
                             }
-                            else
-                            {
-                                source = GetPath(file.Preview);
-                            }
-                        }
 
-                        <img class="filePreviewImage" src="@source" />
+                            <img class="filePreviewImage" src="@source"/>
 
+                        </div>
+
+                        <div id="fileName" class="fileName">@file.ProvidedName</div>
+                        <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
+                        <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
+                        <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
+                            <button class="deleteButton" type="submit" onclick="onDeleteFile()">Delete</button>
+                        </form>
                     </div>
-
-                    <br/>
-
-                    <div id="fileName" class="fileName">@file.ProvidedName</div>
-
-                    <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
-                    <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
-
-                    <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
-                        <button type="submit" class="border-danger">Delete</button>
-                    </form>
                 </div>
-
             </div>
         }
     </div>
 </div>
 
-@Html.ActionLink("Upload new file...", "Create", "Files")
+<div>
+    @Html.ActionLink("Upload new file...", "Create", "Files")
+</div>
 
 <script>
     document.getElementById("sortWayButton").textContent = "Date";
 
 </script>
 
-<script src="js/displayFile.js"></script>
-<script src="js/searchFiles.js"></script>
-<script src="js/sortFiles.js?v1"></script>
+<script src="js/displayFile.js?v1"></script>
+<script src="js/searchFiles.js?v1"></script>
+<script src="js/sortFiles.js"></script>
 <script src="js/selectingFiles.js?v1"></script>

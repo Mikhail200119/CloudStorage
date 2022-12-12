@@ -1,10 +1,9 @@
 ﻿using CloudStorage.DAL.Entities.Interfaces;
-using CloudStorage.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.DAL.Repositories;
 
-public abstract class EfRepository<TEntity> : IDatabaseExecutable<TEntity> where TEntity : class, IEntity, new()
+public abstract class EfRepository<TEntity>  where TEntity : class, IEntity, new()
 {
     protected readonly DbContext Context;
     protected readonly DbSet<TEntity> Table;
@@ -36,17 +35,5 @@ public abstract class EfRepository<TEntity> : IDatabaseExecutable<TEntity> where
             ?.Entity ?? new TEntity { Id = id };
 
         Table.Remove(entity);
-    }
-
-    public async Task<TEntity> ExecuteAsync(Func<DbSet<TEntity>, TEntity> func)
-    {
-        var result = new TEntity();
-
-        await Task.Run(() =>
-        {
-            result = func(Table);
-        });
-
-        return result;
     }
 }

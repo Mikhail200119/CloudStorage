@@ -8,8 +8,6 @@ public class FileViewModel
 
     public byte[] Content { get; set; }
 
-    public string UploadedBy { get; set; }
-
     public DateTime CreatedDate { get; set; }
 
     public int SizeInBytes { get; set; }
