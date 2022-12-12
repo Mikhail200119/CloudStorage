@@ -10,14 +10,3 @@
     [Preview]           VARBINARY (MAX) NULL,
     CONSTRAINT [PK_FileDescription] PRIMARY KEY CLUSTERED ([FileDescriptionId] ASC)
 );
-
-
-GO
-CREATE UNIQUE NONCLUSTERED INDEX [IX_FileDescription_ProvidedName]
-    ON [dbo].[FileDescription]([ProvidedName] ASC);
-
-
-GO
-CREATE UNIQUE NONCLUSTERED INDEX [IX_FileDescription_ContentHash]
-    ON [dbo].[FileDescription]([ContentHash] ASC);
-

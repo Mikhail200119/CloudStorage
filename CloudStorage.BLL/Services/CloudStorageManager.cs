@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Exceptions;
+using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
@@ -30,26 +31,18 @@ public class CloudStorageManager : ICloudStorageManager
         fileDbModel.UploadedBy = _userService.Current.Email;
         fileDbModel.ContentHash = _dataHasher.HashData(newFile.Content);
 
-        var contentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExist(fileDbModel.ContentHash);
-
-        if (contentHashExist)
-        {
-            throw new FileContentDuplicationException("A file with such content is already exist.");
-        }
+        await ValidateFCreatedFile(fileDbModel);
 
         await _fileStorageService.UploadAsync(fileDbModel.UniqueName, newFile.Content);
 
-        switch (fileDbModel.ContentType)
+        if (ContentTypeDeterminant.IsImage(fileDbModel.ContentType))
         {
-            case "video/mp4":
-            {
-                var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.UniqueName);
-                fileDbModel.Preview = _fileStorageService.CompressImage(thumbnail);
-                break;
-            }
-            case "image/png":
-                fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
-                break;
+            fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
+        }
+        else if (ContentTypeDeterminant.IsVideo(fileDbModel.ContentType))
+        {
+            var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.UniqueName);
+            fileDbModel.Preview = _fileStorageService.CompressImage(thumbnail);
         }
 
         try
@@ -116,5 +109,22 @@ public class CloudStorageManager : ICloudStorageManager
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
         return files;
+    }
+
+    private async Task ValidateFCreatedFile(FileDescriptionDbModel fileDbModel)
+    {
+        var contentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExist(fileDbModel.ContentHash, _userService.Current.Email);
+
+        if (contentHashExist)
+        {
+            throw new FileContentDuplicationException("A file with such content is already exist.");
+        }
+
+        var fileNameExist = await _cloudStorageUnitOfWork.FileDescription.FileNameExist(fileDbModel.ProvidedName, _userService.Current.Email);
+
+        if (fileNameExist)
+        {
+            throw new FileNameDuplicationException("A file with such name is already exist.");
+        }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Net;
 using CloudStorage.Web.Models;
 
-namespace CloudStorage.Web;
+namespace CloudStorage.Web.Filters;
 
 public class ExceptionFilter : IExceptionFilter
 {

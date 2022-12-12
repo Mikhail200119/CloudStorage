@@ -1,8 +1,6 @@
-﻿using CloudStorage.Web.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace CloudStorage.Controllers
+namespace CloudStorage.Web.Controllers
 {
     public class HomeController : Controller
     {
@@ -19,6 +17,11 @@ namespace CloudStorage.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult Info()
         {
             return View();
         }

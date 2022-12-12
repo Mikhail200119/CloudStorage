@@ -20,8 +20,6 @@
         return;
     }
 
-    file.height = "550";
-    file.width = "550";
     file.src = fileSrc;
 
     const closeButton = document.createElement("button");
@@ -44,4 +42,8 @@ function closeFileOverlay() {
     const overlay = document.getElementById("myOverlay");
     overlay.style.display = "none";
     overlay.innerHTML = "";
+}
+
+function onDeleteFile() {
+    alert("Confirm the delete action.");
 }
