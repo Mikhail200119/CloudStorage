@@ -20,7 +20,7 @@ public class FilesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> ViewAllFiles()
+    public async Task<IActionResult> ViewAllFiles(FileSearchModel fileSearchModel)
     {
         var files = await _cloudStorageManager.GetAllFilesAsync();
 

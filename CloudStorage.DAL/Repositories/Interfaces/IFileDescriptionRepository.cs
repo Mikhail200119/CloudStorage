@@ -13,4 +13,5 @@ public interface IFileDescriptionRepository
     Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false);
     Task<IEnumerable<string>> GetContentHashesAsync(string userEmail);
     Task<bool> ContentHashExistAsync(string contentHash);
+    Task<IQueryable<FileDescriptionDbModel>> GetAllAsQueryable(bool trackEntities = false);
 }

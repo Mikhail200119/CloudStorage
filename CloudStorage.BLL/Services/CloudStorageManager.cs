@@ -5,6 +5,7 @@ using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.BLL.Services;
 
@@ -98,12 +99,21 @@ public class CloudStorageManager : ICloudStorageManager
         _fileStorageService.Delete(item.UniqueName);
     }
 
-    public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
+    public Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<FileDescription>> GetAllFilesAsync(FileDescriptionSearchModel fileDescriptionSearchModel)
+    {
+        var filesAsQueryable = await _cloudStorageUnitOfWork.FileDescription.GetAllAsQueryable();
+
+        var files = await filesAsQueryable.Where(file => file.ProvidedName == fileDescriptionSearchModel.Name).ToListAsync();
+
         var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
 
-        var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
+        var filesMapped = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
-        return files;
+        return filesMapped;
     }
 }

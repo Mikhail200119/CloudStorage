@@ -35,4 +35,10 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .ToListAsync();
 
     public async Task<bool> ContentHashExistAsync(string contentHash) => await Table.AnyAsync(file => file.ContentHash == contentHash);
+    public async Task<IQueryable<FileDescriptionDbModel>> GetAllAsQueryable(bool trackEntities = false)
+    {
+        var query = trackEntities ? Table : Table.AsNoTracking();
+
+        return await Task.FromResult(query);
+    }
 }

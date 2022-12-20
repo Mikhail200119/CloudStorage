@@ -1,0 +1,12 @@
+﻿@model 
+
+@{
+    Layout = "";
+}
+
+<form asp-controller="Files" asp-action="ViewAllFiles" method="get">
+    <input asp-for="fileName" type="search" placeholder="Type file name..."/>
+    <button type="submit">Search</button>
+</form>
+
+<script src="css/fileItemStyles.css"></script>

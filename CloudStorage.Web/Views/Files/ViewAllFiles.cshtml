@@ -132,59 +132,6 @@
     </div>
 </div>
 
-@*<div id="files">
-    <div id="filesContainer" class="list-group-horizontal-lg">
-        @foreach (var file in Model)
-        {
-
-            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = fileFolder.Id, contentType = fileFolder.ContentType });
-
-            <div id="fileDescription" class="list-inline-item fileItem" ondblclick="handleFileDoubleClick('@fileSrc', 
-    '@fileFolder.ContentType')" aria-label="@fileFolder.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
-
-                <div id="selector">
-                    <div class="fileImageBox">
-
-                        @{
-                            string source;
-
-                            if (fileFolder.Preview.Length == 0)
-                            {
-                                source = fileFolder.ContentType switch
-                                {
-                                    FileContentTypes.Image.Png => "image icon.png",
-                                    FileContentTypes.Video.Mp4 => "video icon.jpg",
-                                    FileContentTypes.Text.Plain => "document icon.png",
-                                    _ => string.Empty
-                                    };
-                            }
-                            else
-                            {
-                                source = GetPath(fileFolder.Preview);
-                            }
-                        }
-
-                        <img class="filePreviewImage" src="@source" />
-
-                    </div>
-
-                    <br/>
-
-                    <div id="fileName" class="fileName">@fileFolder.ProvidedName</div>
-
-                    <div id="fileSize" class="visually-hidden">@fileFolder.SizeInBytes</div>
-                    <div id="fileCreatedDate" class="visually-hidden">@fileFolder.CreatedDate.ToString("R")</div>
-
-                    <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@fileFolder.Id" method="post">
-                        <button type="submit" class="border-danger">Delete</button>
-                    </form>
-                </div>
-
-            </div>
-        }
-    </div>
-</div>*@
-
 @Html.ActionLink("Upload new file...", "Create", "Files")
 
 @{
