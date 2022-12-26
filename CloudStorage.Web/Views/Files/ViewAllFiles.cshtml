@@ -15,24 +15,25 @@
 
 <div id="myOverlay"></div>
 
-<label>Search: </label>
-<input class="search-input" type="search" placeholder="Type file name..." oninput="onSearchInput(this)"/>
 
-<br/>
+<div class="files-options">
+    <label>Search: </label>
+    <input class="search-input" type="search" placeholder="Type file name..." oninput="onSearchInput(this)"/>
 
-<label>Sort by</label>
+    <label>Sort by</label>
 
-<div class="dropdown m-2">
-    <button id="sortWayButton" name="sortMethod" class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
-            style="color:black" aria-expanded="False">
-        @sortMethods.FirstOrDefault();
-    </button>
-    <ul class="dropdown-menu">
-        @foreach (var sortMethod in sortMethods)
-        {
-            <li><a class="dropdown-item" href="javascript: void (0)" onclick="onSortingFiles(this)">@sortMethod</a></li>
-        }
-    </ul>
+    <div class="dropdown m-2">
+        <button id="sortWayButton" name="sortMethod" class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                style="color:black" aria-expanded="False">
+            @sortMethods.FirstOrDefault();
+        </button>
+        <ul class="dropdown-menu">
+            @foreach (var sortMethod in sortMethods)
+            {
+                <li><a class="dropdown-item" href="javascript: void (0)" onclick="onSortingFiles(this)">@sortMethod</a></li>
+            }
+        </ul>
+    </div>
 </div>
 
 @{

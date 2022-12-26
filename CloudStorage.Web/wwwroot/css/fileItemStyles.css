@@ -38,9 +38,9 @@
 }
 
 .fileItemBox {
+    display: flex;
     height: 190px;
     width: 150px;
-    display: inline-grid;
 }
 
 .fileItem {
@@ -50,7 +50,7 @@
     height: 150px;
     width: inherit;
     max-width: 250px;
-    display: inline-block;
+   /* display: inline-block;*/
     border-radius: 13px;
     transition: 0.3s;
     overflow: hidden;
@@ -100,6 +100,7 @@
     border-radius: 13px;
     border-color: red;
     width: 400px;
+    margin: 0 20px 0 20px;
 }
 
 .upload-button {
@@ -127,4 +128,15 @@ footer {
 
 .list-inline-item {
     display: inline-grid;
+}
+
+div.dropdown.m-2 {
+    display: inline;
+    width: 15px;
+}
+
+.files-options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
