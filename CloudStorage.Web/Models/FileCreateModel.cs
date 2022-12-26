@@ -8,4 +8,7 @@ public class FileCreateModel
     [Required]
     [FileContentRequired]
     public IFormFile FormFile { get; set; }
+
+    [MaxLength(20)]
+    public string FolderName { get; set; }
 }
