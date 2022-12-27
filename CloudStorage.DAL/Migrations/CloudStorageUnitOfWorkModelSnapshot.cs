@@ -42,9 +42,6 @@ namespace CloudStorage.DAL.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("FileFolderId")
-                        .HasColumnType("integer");
-
                     b.Property<byte[]>("Preview")
                         .HasColumnType("bytea");
 
@@ -65,55 +62,7 @@ namespace CloudStorage.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileFolderId");
-
                     b.ToTable("FileDescription");
-                });
-
-            modelBuilder.Entity("CloudStorage.DAL.Entities.FileFolderDbModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("FileFolderId");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ParentFolderId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentFolderId");
-
-                    b.ToTable("FileFolder");
-                });
-
-            modelBuilder.Entity("CloudStorage.DAL.Entities.FileDescriptionDbModel", b =>
-                {
-                    b.HasOne("CloudStorage.DAL.Entities.FileFolderDbModel", "FileFolder")
-                        .WithMany("FileDescriptions")
-                        .HasForeignKey("FileFolderId");
-
-                    b.Navigation("FileFolder");
-                });
-
-            modelBuilder.Entity("CloudStorage.DAL.Entities.FileFolderDbModel", b =>
-                {
-                    b.HasOne("CloudStorage.DAL.Entities.FileFolderDbModel", "ParentFolder")
-                        .WithMany()
-                        .HasForeignKey("ParentFolderId");
-
-                    b.Navigation("ParentFolder");
-                });
-
-            modelBuilder.Entity("CloudStorage.DAL.Entities.FileFolderDbModel", b =>
-                {
-                    b.Navigation("FileDescriptions");
                 });
 #pragma warning restore 612, 618
         }

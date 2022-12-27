@@ -24,7 +24,4 @@ public class FileDescriptionDbModel : IEntity
     public string UploadedBy { get; set; }
 
     public byte[]? Preview { get; set; }
-
-    public int? FileFolderId { get; set; }
-    public FileFolderDbModel FileFolder { get; set; }
 }
