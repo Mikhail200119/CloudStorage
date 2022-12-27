@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ApplicationContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationContext>();
@@ -34,7 +34,7 @@ builder.WebHost.ConfigureServices(services =>
         .AddTransient<IFileStorageService, FileStorageService>()
         .AddTransient<IAesEncryptor, AesEncryptor>()
         .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder =>
-            optionsBuilder.UseSqlServer(databaseConnectionString));
+            optionsBuilder.UseNpgsql(databaseConnectionString));
 
 
     var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();

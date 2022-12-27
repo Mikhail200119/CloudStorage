@@ -1,0 +1,16 @@
+﻿.login {
+    display: flex;
+    justify-content: center;
+}
+
+.login-submit-button {
+    border-radius: 18px;
+    border: 2px solid greed;
+    width: 300px;
+    background-color: white;
+    transition: 0.2s;
+}
+
+.login-submit-button:hover {
+    background-color: blue;
+}
