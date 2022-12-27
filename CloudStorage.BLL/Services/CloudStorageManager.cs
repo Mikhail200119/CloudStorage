@@ -70,7 +70,7 @@ public class CloudStorageManager : ICloudStorageManager
         return file;
     }
 
-    public async Task<byte[]> GetContentByFileDescriptionIdAsync(int id)
+    public async Task<byte[]> GetFileContentAsync(int id)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
 
