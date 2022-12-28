@@ -33,6 +33,8 @@ public class FilesController : Controller
     public IActionResult Create() => View(new FileCreateModel());
 
     [HttpPost]
+    [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
+    [RequestSizeLimit(1_000_000_000)]
     public async Task<IActionResult> Create(FileCreateModel file)
     {
         if (ModelState.IsValid)
