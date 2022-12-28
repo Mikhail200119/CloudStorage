@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
+using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,8 @@ namespace CloudStorage.Web.Controllers;
 [Authorize]
 public class FilesController : Controller
 {
+    private const long MaxFileSize = 10_000_000_000;
+    
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
 
@@ -33,8 +36,9 @@ public class FilesController : Controller
     public IActionResult Create() => View(new FileCreateModel());
 
     [HttpPost]
-    [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
-    [RequestSizeLimit(1_000_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSize)]
+    [RequestSizeLimit(MaxFileSize)]
+    [DisableFormValueModelBinding]
     public async Task<IActionResult> Create(FileCreateModel file)
     {
         if (ModelState.IsValid)
