@@ -1,0 +1,142 @@
+.myFile {
+    height: 50px;
+    width: 30px;
+}
+
+#myOverlay {
+    position: fixed;
+    display: none;
+    width: 100%;
+    height:100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 2;
+    cursor: default;
+}
+
+#overlayFile {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+}
+
+#overlayCloseItem {
+    position: absolute;
+    top: 5%;
+    right: 2%;
+    border-radius: 50px;
+    transition: 0.1s;
+}
+
+#overlayCloseItem:hover {
+    background-color: gray;
+}
+
+.fileItemBox {
+    display: flex;
+    height: 190px;
+    width: 150px;
+}
+
+.fileItem {
+    margin: 5px;
+    padding: 5px 5px 5px 9px;
+    border: 1px solid red;
+    height: 150px;
+    width: inherit;
+    max-width: 250px;
+   /* display: inline-block;*/
+    border-radius: 13px;
+    transition: 0.3s;
+    overflow: hidden;
+}
+
+.fileItem:hover {
+    background-color: gray;
+    height: 180px;
+    transform: scale(1.1, 1.1);
+}
+
+.fileName {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-x: hidden;
+    font-size: 13px;
+    margin-top: 0;
+}
+
+.fileImageBox {
+    height: 120px;
+    width: 130px;
+    margin-bottom: 0;
+}
+
+.filePreviewImage {
+    height: inherit;
+    width: inherit;
+    max-width: inherit;
+    object-fit: contain;
+    margin-bottom: 0;
+}
+
+.deleteButton {
+    border-radius: 13px;
+    font-size: 13px;
+    border-color: red;
+    transition: 0.1s;
+    margin: 5px 20px 0 35px;
+}
+
+.deleteButton:hover {
+    background-color: red;
+}
+
+.search-input {
+    border-radius: 13px;
+    border-color: red;
+    width: 400px;
+    margin: 0 20px 0 20px;
+}
+
+.upload-button {
+    border-radius: 13px;
+    border-color: green;
+    transition: 0.4s;
+}
+
+.upload-button:hover {
+    background-color: green;
+}
+
+body {
+   /* background-image: url('/background.png');*/
+    user-select: none;
+}
+
+footer {
+    margin-top: -200%;
+}
+
+.list-group-horizontal-lg {
+
+}
+
+.list-inline-item {
+    display: inline-grid;
+}
+
+div.dropdown.m-2 {
+    display: inline;
+    width: 15px;
+}
+
+.files-options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

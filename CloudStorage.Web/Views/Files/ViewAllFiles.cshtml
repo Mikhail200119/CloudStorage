@@ -1,0 +1,106 @@
+@using CloudStorage.Web.Models
+@using CloudStorage.Web.Helpers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@model IEnumerable<FileViewModel>
+
+@{
+    var sortMethods = new List<string>
+    {
+        "Name",
+        "Size",
+        "Date"
+    };
+}
+
+<div id="myOverlay"></div>
+
+
+<div class="files-options">
+    <label>Search: </label>
+    <input class="search-input" type="search" placeholder="Type file name..." oninput="onSearchInput(this)"/>
+
+    <label>Sort by</label>
+
+    <div class="dropdown m-2">
+        <button id="sortWayButton" name="sortMethod" class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                style="color:black" aria-expanded="False">
+            @sortMethods.FirstOrDefault();
+        </button>
+        <ul class="dropdown-menu">
+            @foreach (var sortMethod in sortMethods)
+            {
+                <li><a class="dropdown-item" href="javascript: void (0)" onclick="onSortingFiles(this)">@sortMethod</a></li>
+            }
+        </ul>
+    </div>
+</div>
+
+@{
+    string GetPath(byte[] bytes)
+    {
+        var base64 = Convert.ToBase64String(bytes);
+        return $"data: image/gif ;base64,{base64}";
+    }
+}
+
+<div id="files">
+    <div id="filesContainer" class="list-group-horizontal-lg">
+        @foreach (var file in Model)
+        {
+            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+
+            <div class="list-inline-item">
+                <div class="fileItemBox">
+                    <div id="fileDescription" class="fileItem" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
+                        <div class="fileImageBox">
+
+                            @{
+                                string source;
+
+                                if (file.Preview.Length == 0)
+                                {
+                                    source = file.ContentType switch
+                                    {
+                                        FileContentTypes.Image.Png => "image icon.png",
+                                        FileContentTypes.Video.Mp4 => "video icon.jpg",
+                                        FileContentTypes.Text.Plain => "document icon.png",
+                                        _ => string.Empty
+                                        };
+                                }
+                                else
+                                {
+                                    source = GetPath(file.Preview);
+                                }
+                            }
+
+                            <img class="filePreviewImage" src="@source"/>
+
+                        </div>
+
+                        <div id="fileName" class="fileName">@file.ProvidedName</div>
+                        <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
+                        <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
+                        <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
+                            <button class="deleteButton" type="submit" onclick="onDeleteFile()">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div>
+    @Html.ActionLink("Upload new file...", "Create", "Files")
+</div>
+
+<script>
+    document.getElementById("sortWayButton").textContent = "Date";
+
+</script>
+
+<script src="js/displayFile.js?v1"></script>
+<script src="js/searchFiles.js?v1"></script>
+<script src="js/sortFiles.js"></script>
+<script src="js/selectingFiles.js?v1"></script>
