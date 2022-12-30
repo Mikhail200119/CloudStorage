@@ -1,7 +1,4 @@
-@using CloudStorage.Web.Models
 @using CloudStorage.Web.Helpers
-@using Microsoft.AspNetCore.Mvc.TagHelpers
-
 @model IEnumerable<FileViewModel>
 
 @{
@@ -48,7 +45,9 @@
     <div id="filesContainer" class="list-group-horizontal-lg">
         @foreach (var file in Model)
         {
-            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+            //var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+
+            var fileSrc = $"/Files/get-content?id={file.Id}&&contentType={file.ContentType}";
 
             <div class="list-inline-item">
                 <div class="fileItemBox">
@@ -100,7 +99,7 @@
 
 </script>
 
-<script src="js/displayFile.js?v1"></script>
+<script src="js/displayFile.js"></script>
 <script src="js/searchFiles.js?v1"></script>
 <script src="js/sortFiles.js"></script>
 <script src="js/selectingFiles.js?v1"></script>

@@ -9,8 +9,10 @@
     }
     else if (contentType === "video/mp4") {
         file = document.createElement("video");
-        file.id = "videoplayer";
-        file.controls = true;
+        file.setAttribute("class", "file-video-player");
+        file.setAttribute("controls", "");
+       /* const stream = file.captureStream();
+        const mediaRecorder = new MediaRecorder(stream);*/
     }
     else if (contentType === "text/plain") {
         file = document.createElement("iframe");
@@ -20,7 +22,8 @@
         return;
     }
 
-    file.src = fileSrc;
+    //file.src = fileSrc;
+    file.setAttribute("src", `${fileSrc}`);
 
     const closeButton = document.createElement("button");
     closeButton.textContent = "X";

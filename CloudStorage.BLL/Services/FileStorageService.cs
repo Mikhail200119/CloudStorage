@@ -1,5 +1,6 @@
 ﻿using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
+using CloudStorage.Common.Extensions;
 using Microsoft.Extensions.Options;
 using Xabe.FFmpeg;
 
@@ -20,9 +21,9 @@ public class FileStorageService : IFileStorageService
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
 
-        await UploadFileAsync(filePath, data);
+        await UploadFileAsync(filePath, data, encrypt: false);
     }
-
+    
     public void Delete(string fileName)
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
@@ -40,16 +41,26 @@ public class FileStorageService : IFileStorageService
         return await GetFileAsync(filePath);
     }
 
+    public async Task<Stream> GetStreamAsync(string fileName)
+    {
+        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
+
+        var file = File.OpenRead(filePath);
+
+        return file;
+    }
+
     public async Task<byte[]> GetVideoThumbnailAsync(string fileName)
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
         var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{Guid.NewGuid()}.jpeg");
 
-        var decryptedFile = await GetFileAsync(filePath);
+        //var decryptedFile = await GetFileAsync(filePath);
+        var decryptedFile = await GetStreamAsync(fileName);
 
         var tmpFileName = Guid.NewGuid().ToString();
         var tmpFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, tmpFileName);
-        await UploadFileAsync(tmpFilePath, decryptedFile, encrypt: false);
+        await UploadFileAsync(tmpFilePath, decryptedFile.ToArray(), encrypt: false);
 
         FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath);
 

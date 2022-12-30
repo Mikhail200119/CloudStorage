@@ -69,11 +69,10 @@ public class FilesController : Controller
         return RedirectToAction(nameof(ViewAllFiles));
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetFileContent(int id, string contentType)
+    public IResult GetFileContent(int id, string contentType)
     {
-        var content = await _cloudStorageManager.GetFileContentAsync(id);
+        var content = _cloudStorageManager.GetFileStreamAsync(id).Result;
 
-        return File(content, contentType);
+        return Results.File(content, contentType, enableRangeProcessing: true);
     }
 }

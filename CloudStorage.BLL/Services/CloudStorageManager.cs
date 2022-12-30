@@ -3,6 +3,7 @@ using CloudStorage.BLL.Exceptions;
 using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
+using CloudStorage.Common.Extensions;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
 
@@ -29,15 +30,17 @@ public class CloudStorageManager : ICloudStorageManager
     {
         var fileDbModel = _mapper.Map<FileCreateData, FileDescriptionDbModel>(newFile);
         fileDbModel.UploadedBy = _userService.Current.Email;
-        fileDbModel.ContentHash = _dataHasher.HashData(newFile.Content);
+        var contentAsArray = newFile.Content.ToArray();
+
+        fileDbModel.ContentHash = _dataHasher.HashData(contentAsArray);
 
         await ValidateFCreatedFile(fileDbModel);
 
-        await _fileStorageService.UploadAsync(fileDbModel.UniqueName, newFile.Content);
+        await _fileStorageService.UploadAsync(fileDbModel.UniqueName, contentAsArray);
 
         if (ContentTypeDeterminant.IsImage(fileDbModel.ContentType))
         {
-            fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
+            fileDbModel.Preview = _fileStorageService.CompressImage(contentAsArray);
         }
         else if (ContentTypeDeterminant.IsVideo(fileDbModel.ContentType))
         {
@@ -57,7 +60,7 @@ public class CloudStorageManager : ICloudStorageManager
         }
 
         var file = _mapper.Map<FileDescriptionDbModel, FileDescription>(fileDbModel);
-
+        
         return file;
     }
 
@@ -75,6 +78,15 @@ public class CloudStorageManager : ICloudStorageManager
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
 
         var content = await _fileStorageService.GetAsync(item.UniqueName);
+
+        return content;
+    }
+
+    public async Task<Stream> GetFileStreamAsync(int fileId)
+    {
+        var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+
+        var content = await _fileStorageService.GetStreamAsync(item.UniqueName);
 
         return content;
     }
