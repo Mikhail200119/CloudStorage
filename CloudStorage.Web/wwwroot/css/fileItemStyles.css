@@ -114,10 +114,10 @@
     background-color: green;
 }
 
-body {
-   /* background-image: url('/background.png');*/
+/*body {
+   !* background-image: url('/background.png');*!
     user-select: none;
-}
+}*/
 
 footer {
     margin-top: -200%;

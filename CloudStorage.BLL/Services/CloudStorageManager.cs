@@ -3,7 +3,6 @@ using CloudStorage.BLL.Exceptions;
 using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
-using CloudStorage.Common.Extensions;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
 
@@ -30,17 +29,16 @@ public class CloudStorageManager : ICloudStorageManager
     {
         var fileDbModel = _mapper.Map<FileCreateData, FileDescriptionDbModel>(newFile);
         fileDbModel.UploadedBy = _userService.Current.Email;
-        var contentAsArray = newFile.Content.ToArray();
 
-        fileDbModel.ContentHash = _dataHasher.HashData(contentAsArray);
+        fileDbModel.ContentHash = _dataHasher.HashStreamData(newFile.Content);
 
         await ValidateFCreatedFile(fileDbModel);
 
-        await _fileStorageService.UploadAsync(fileDbModel.UniqueName, contentAsArray);
+        await _fileStorageService.UploadStreamAsync(fileDbModel.UniqueName, newFile.Content);
 
         if (ContentTypeDeterminant.IsImage(fileDbModel.ContentType))
         {
-            fileDbModel.Preview = _fileStorageService.CompressImage(contentAsArray);
+            fileDbModel.Preview = _fileStorageService.CompressImage(newFile.Content);
         }
         else if (ContentTypeDeterminant.IsVideo(fileDbModel.ContentType))
         {
@@ -80,6 +78,13 @@ public class CloudStorageManager : ICloudStorageManager
         var content = await _fileStorageService.GetAsync(item.UniqueName);
 
         return content;
+    }
+
+    public async Task<string> GetUniqueNameAsync(int fileId)
+    {
+        var file = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+
+        return file.UniqueName;
     }
 
     public async Task<Stream> GetFileStreamAsync(int fileId)

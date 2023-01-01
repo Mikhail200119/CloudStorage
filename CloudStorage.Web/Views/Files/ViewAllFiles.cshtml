@@ -12,6 +12,9 @@
 
 <div id="myOverlay"></div>
 
+<div id="view-all-files-url" style="display: none">
+    @Url.Action("ViewAllFiles", "Files")
+</div>
 
 <div class="files-options">
     <label>Search: </label>
@@ -45,9 +48,9 @@
     <div id="filesContainer" class="list-group-horizontal-lg">
         @foreach (var file in Model)
         {
-            //var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
 
-            var fileSrc = $"/Files/get-content?id={file.Id}&&contentType={file.ContentType}";
+            //var fileSrc = $"/Files/get-content?id={file.Id}&&contentType={file.ContentType}";
 
             <div class="list-inline-item">
                 <div class="fileItemBox">
@@ -81,7 +84,7 @@
                         <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
                         <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
                         <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
-                            <button class="deleteButton" type="submit" onclick="onDeleteFile()">Delete</button>
+                            <button class="deleteButton" type="submit">Delete</button>
                         </form>
                     </div>
                 </div>
