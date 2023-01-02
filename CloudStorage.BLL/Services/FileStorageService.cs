@@ -1,5 +1,6 @@
 ﻿using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
+using CloudStorage.Common.Extensions;
 using Microsoft.Extensions.Options;
 using Xabe.FFmpeg;
 
@@ -20,7 +21,16 @@ public class FileStorageService : IFileStorageService
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
 
-        await UploadFileAsync(filePath, data);
+        await UploadFileAsync(filePath, data, encrypt: false);
+    }
+
+    public async Task UploadStreamAsync(string fileName, Stream data)
+    {
+        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
+
+        await using var fileStream = File.Create(filePath);
+        data.Seek(0, SeekOrigin.Begin);
+        await data.CopyToAsync(fileStream);
     }
 
     public void Delete(string fileName)
@@ -40,16 +50,31 @@ public class FileStorageService : IFileStorageService
         return await GetFileAsync(filePath);
     }
 
+    public async Task<Stream> GetStreamAsync(string fileName)
+    {
+        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
+
+        var file = File.Open(filePath, new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Delete | FileShare.Read
+        });
+
+        return file;
+    }
+
     public async Task<byte[]> GetVideoThumbnailAsync(string fileName)
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
         var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{Guid.NewGuid()}.jpeg");
 
-        var decryptedFile = await GetFileAsync(filePath);
+        //var decryptedFile = await GetFileAsync(filePath);
+        var decryptedFile = await GetStreamAsync(fileName);
 
         var tmpFileName = Guid.NewGuid().ToString();
         var tmpFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, tmpFileName);
-        await UploadFileAsync(tmpFilePath, decryptedFile, encrypt: false);
+        await UploadFileAsync(tmpFilePath, decryptedFile.ToArray(), encrypt: false);
 
         FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath);
 

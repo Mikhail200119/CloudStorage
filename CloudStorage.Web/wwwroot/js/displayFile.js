@@ -1,18 +1,16 @@
 ﻿function handleFileDoubleClick(fileSrc, contentType) {
     const overlayElement = document.getElementById("myOverlay");
     overlayElement.style.display = "block";
-
-    let file = null;    
+    
+    let file = null;
 
     if (contentType === "image/png") {
         file = document.createElement("img");
-    }
-    else if (contentType === "video/mp4") {
+    } else if (contentType === "video/mp4") {
         file = document.createElement("video");
-        file.id = "videoplayer";
-        file.controls = true;
-    }
-    else if (contentType === "text/plain") {
+        file.setAttribute("class", "file-video-player");
+        file.setAttribute("controls", "");
+    } else if (contentType === "text/plain") {
         file = document.createElement("iframe");
     }
 
@@ -21,6 +19,7 @@
     }
 
     file.src = fileSrc;
+    file.setAttribute("src", `${fileSrc}`);
 
     const closeButton = document.createElement("button");
     closeButton.textContent = "X";
@@ -36,14 +35,24 @@
 
     overlayElement.appendChild(divElement);
     overlayElement.appendChild(closeButton);
+
+    /* alert("before onload subscription");
+     file.setAttribute("onload", "onMediaLoaded(this)");
+     alert("after onload subscription");*/
+
+    // alert("captureStream() call");
 }
 
 function closeFileOverlay() {
     const overlay = document.getElementById("myOverlay");
+    const videoElement = overlay.querySelector("div[id=overlayFile] video");
+    
+    if (videoElement !== null) {
+        videoElement.pause();
+        videoElement.removeAttribute("src");
+        videoElement.load();
+    }
+    
     overlay.style.display = "none";
     overlay.innerHTML = "";
-}
-
-function onDeleteFile() {
-    alert("Confirm the delete action.");
 }

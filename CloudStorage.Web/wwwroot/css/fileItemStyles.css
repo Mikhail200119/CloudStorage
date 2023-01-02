@@ -56,6 +56,7 @@
     overflow: hidden;
 }
 
+
 .fileItem:hover {
     background-color: gray;
     height: 180px;
@@ -113,10 +114,10 @@
     background-color: green;
 }
 
-body {
-   /* background-image: url('/background.png');*/
+/*body {
+   !* background-image: url('/background.png');*!
     user-select: none;
-}
+}*/
 
 footer {
     margin-top: -200%;
@@ -139,4 +140,10 @@ div.dropdown.m-2 {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.file-video-player {
+    height: 500px;
+    width: 1000px;
+    object-fit: contain;
 }

@@ -4,7 +4,7 @@ public class FileCreateData
 {
     public string Name { get; set; }
 
-    public byte[] Content { get; set; }
+    public Stream Content { get; set; }
 
     public string ContentType { get; set; }
 }
