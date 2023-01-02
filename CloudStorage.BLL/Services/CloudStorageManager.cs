@@ -32,7 +32,7 @@ public class CloudStorageManager : ICloudStorageManager
 
         fileDbModel.ContentHash = _dataHasher.HashStreamData(newFile.Content);
 
-        await ValidateFCreatedFile(fileDbModel);
+        await ValidateCreatedFile(fileDbModel);
 
         await _fileStorageService.UploadStreamAsync(fileDbModel.UniqueName, newFile.Content);
 
@@ -58,8 +58,71 @@ public class CloudStorageManager : ICloudStorageManager
         }
 
         var file = _mapper.Map<FileDescriptionDbModel, FileDescription>(fileDbModel);
-        
+
         return file;
+    }
+
+    public async Task<IEnumerable<FileDescription>> CreateAsync(IEnumerable<FileCreateData> files)
+    {
+        var filesArray = files.ToArray();
+        var filesDbModels = _mapper.Map<IEnumerable<FileCreateData>, IEnumerable<FileDescriptionDbModel>>(filesArray);
+        var f = filesArray.DistinctBy(data => data.Name);
+
+        if (f.Count() < filesArray.Length)
+        {
+            throw new FileNameDuplicationException("Some files have the same name.");
+        }
+
+        var dbModelsToUpload = filesDbModels.Select(model =>
+        {
+            var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
+            model.ContentHash = _dataHasher.HashStreamData(content);
+            model.UploadedBy = _userService.Current.Email;
+
+            return model;
+        }).ToArray();
+
+        var namesWithContents = new List<(string FileName, Stream Content)>();
+
+        foreach (var fileCreateData in filesArray)
+        {
+            var uniqueName = dbModelsToUpload.Single(file => file.ProvidedName == fileCreateData.Name).UniqueName;
+
+            namesWithContents.Add((uniqueName, fileCreateData.Content));
+        }
+
+        await _fileStorageService.UploadRangeAsync(namesWithContents);
+        
+        var dbModelsWithContent = dbModelsToUpload.Select(model =>
+        {
+            var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
+
+            return (model, content);
+        }).ToArray();
+
+        await ValidateCreatedFile(dbModelsToUpload);
+        await SetFilesThumbnail(dbModelsWithContent);
+
+        try
+        {
+            await _cloudStorageUnitOfWork.FileDescription.CreateRangeAsync(dbModelsToUpload);
+            await _cloudStorageUnitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            var uniqueNames = dbModelsToUpload.Select(file => file.UniqueName);
+
+            foreach (var name in uniqueNames)
+            {
+                _fileStorageService.Delete(name);
+            }
+
+            throw;
+        }
+
+        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(dbModelsToUpload);
+
+        return fileDescriptions;
     }
 
     public async Task<FileDescription> GetByIdAsync(int id)
@@ -128,20 +191,42 @@ public class CloudStorageManager : ICloudStorageManager
         return files;
     }
 
-    private async Task ValidateFCreatedFile(FileDescriptionDbModel fileDbModel)
+    private async Task ValidateCreatedFile(params FileDescriptionDbModel[] fileDbModel)
     {
-        var contentHashExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashExist(fileDbModel.ContentHash, _userService.Current.Email);
+        var hashes = fileDbModel.Select(model => model.ContentHash);
 
-        if (contentHashExist)
+        var contentHashesExist = await _cloudStorageUnitOfWork.FileDescription.ContentHashesExistAsync(_userService.Current.Email, hashes.ToArray());
+
+        if (contentHashesExist)
         {
             throw new FileContentDuplicationException("A file with such content is already exist.");
         }
 
-        var fileNameExist = await _cloudStorageUnitOfWork.FileDescription.FileNameExist(fileDbModel.ProvidedName, _userService.Current.Email);
+        var fileNames = fileDbModel.Select(file => file.ProvidedName);
 
-        if (fileNameExist)
+        var fileNamesExist = await _cloudStorageUnitOfWork.FileDescription.FileNamesExist(_userService.Current.Email, fileNames.ToArray());
+
+        if (fileNamesExist)
         {
             throw new FileNameDuplicationException("A file with such name is already exist.");
+        }
+    }
+
+    private async Task SetFilesThumbnail(params (FileDescriptionDbModel DbModel, Stream Content)[] filesInfo)
+    {
+        foreach (var fileDbModel in filesInfo)
+        {
+            fileDbModel.Content.Seek(0, SeekOrigin.Begin);
+
+            if (ContentTypeDeterminant.IsImage(fileDbModel.DbModel.ContentType))
+            {
+                fileDbModel.DbModel.Preview = _fileStorageService.CompressImage(fileDbModel.Content);
+            }
+            else if (ContentTypeDeterminant.IsVideo(fileDbModel.DbModel.ContentType))
+            {
+                var thumbnail = await _fileStorageService.GetVideoThumbnailAsync(fileDbModel.DbModel.UniqueName);
+                fileDbModel.DbModel.Preview = _fileStorageService.CompressImage(thumbnail);
+            }
         }
     }
 }

@@ -17,6 +17,14 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
         await base.CreateAsync(entity);
     }
 
+    public async Task CreateRangeAsync(IEnumerable<FileDescriptionDbModel> filesDescriptions)
+    {
+        await Table.AddRangeAsync(filesDescriptions);
+    }
+
+    public async Task<bool> ContentHashesExistAsync(string userMail, params string[] contentHashes) =>
+        await Table.AnyAsync(file => contentHashes.Contains(file.ContentHash) && file.UploadedBy == userMail);
+
     public async Task<FileDescriptionDbModel?> GetByIdAsync(int id)
     {
         return await Table
@@ -35,6 +43,10 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
 
     public async Task<bool> ContentHashExist(string contentHash, string userEmail) => await Table.AnyAsync(file => file.ContentHash == contentHash && file.UploadedBy == userEmail);
     public async Task<bool> FileNameExist(string providedFileName, string userEmail) => await Table.AnyAsync(file => file.ProvidedName == providedFileName && file.UploadedBy == userEmail);
+
+    public async Task<bool> FileNamesExist(string userMail, params string[] names) =>
+        await Table.AnyAsync(file => names.Contains(file.ProvidedName) && file.UploadedBy == userMail);
+
     public async Task<IEnumerable<FileDescriptionDbModel>> GetAllFiles(Predicate<FileDescriptionDbModel> searchOption, string email, bool trackEntities = false)
     {
         return await Table.Where(file => searchOption(file))

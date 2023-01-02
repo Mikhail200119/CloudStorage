@@ -11,8 +11,8 @@ public class FileContentRequiredAttribute : ValidationAttribute
             return false;
         }
 
-        var formFile = (IFormFile)value;
+        var formFiles = (IEnumerable<IFormFile>)value;
 
-        return formFile.Length >= 1;
+        return formFiles.All(file => file.Length >= 1);
     }
 }

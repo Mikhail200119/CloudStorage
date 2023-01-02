@@ -33,6 +33,24 @@ public class FileStorageService : IFileStorageService
         await data.CopyToAsync(fileStream);
     }
 
+    public async Task UploadRangeAsync(IEnumerable<(string FileName, Stream Content)> files)
+    {
+        var uploadFileTasks = files.Select(file =>
+        {
+            var (fileName, content) = file;
+            var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
+
+            return Task.Run(async () =>
+            {
+                await using var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                content.Seek(0, SeekOrigin.Begin);
+                await content.CopyToAsync(fileStream);
+            });
+        });
+        
+        await Task.WhenAll(uploadFileTasks);
+    }
+
     public void Delete(string fileName)
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
@@ -40,6 +58,22 @@ public class FileStorageService : IFileStorageService
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
+        }
+    }
+
+    public async Task DeleteRange(params string[] fileNames)
+    {
+        foreach (var fileName in fileNames)
+        {
+            await Task.Run(() =>
+            {
+                var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            });
         }
     }
 

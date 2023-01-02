@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
-using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -17,13 +15,11 @@ public class FilesController : Controller
 
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
-    private readonly IOptions<FileStorageOptions> _fileStorageOptions;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IOptions<FileStorageOptions> fileStorageOptions)
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
-        _fileStorageOptions = fileStorageOptions;
     }
 
     [HttpGet]
@@ -43,13 +39,13 @@ public class FilesController : Controller
     [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSize)]
     [RequestSizeLimit(MaxFileSize)]
     [DisableFormValueModelBinding]
-    public async Task<IActionResult> Create(FileCreateModel file)
+    public async Task<IActionResult> Create(FileCreateModel fileCreateModel)
     {
         if (ModelState.IsValid)
         {
-            var fileCreateData = _mapper.Map<FileCreateModel, FileCreateData>(file);
+            var filesCreateData = _mapper.Map<IEnumerable<IFormFile>, IEnumerable<FileCreateData>>(fileCreateModel.FormFiles);
 
-            await _cloudStorageManager.CreateAsync(fileCreateData);
+            await _cloudStorageManager.CreateAsync(filesCreateData);
         }
 
         return RedirectToAction(nameof(ViewAllFiles));
