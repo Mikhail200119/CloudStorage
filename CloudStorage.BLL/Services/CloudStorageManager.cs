@@ -191,6 +191,12 @@ public class CloudStorageManager : ICloudStorageManager
         return files;
     }
 
+    public async Task RenameFileAsync(int id, string newName)
+    {
+        await _cloudStorageUnitOfWork.FileDescription.RenameFileAsync(id, newName);
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
+    }
+
     private async Task ValidateCreatedFile(params FileDescriptionDbModel[] fileDbModel)
     {
         var hashes = fileDbModel.Select(model => model.ContentHash);

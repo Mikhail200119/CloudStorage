@@ -17,13 +17,6 @@ public class FileStorageService : IFileStorageService
         _storageOptions = fileStorageOptions.Value;
     }
 
-    public async Task UploadAsync(string fileName, byte[] data)
-    {
-        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
-
-        await UploadFileAsync(filePath, data, encrypt: false);
-    }
-
     public async Task UploadStreamAsync(string fileName, Stream data)
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
@@ -47,8 +40,10 @@ public class FileStorageService : IFileStorageService
                 await content.CopyToAsync(fileStream);
             });
         });
-        
-        await Task.WhenAll(uploadFileTasks);
+
+        await Task
+            .WhenAll(uploadFileTasks)
+            .ConfigureAwait(false);
     }
 
     public void Delete(string fileName)

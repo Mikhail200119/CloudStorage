@@ -76,4 +76,12 @@ public class FilesController : Controller
 
         return File(content, contentType, enableRangeProcessing: true);
     }
+
+    [HttpPut]
+    public async Task<IActionResult> RenameFile(int id, string newName)
+    {
+        await _cloudStorageManager.RenameFileAsync(id, newName);
+
+        return RedirectToAction(nameof(ViewAllFiles));
+    }
 }

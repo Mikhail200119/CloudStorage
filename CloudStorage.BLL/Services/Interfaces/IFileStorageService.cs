@@ -2,7 +2,6 @@
 
 public interface IFileStorageService
 {
-    Task UploadAsync(string fileName, byte[] data);
     Task UploadStreamAsync(string fileName, Stream data);
     Task UploadRangeAsync(IEnumerable<(string FileName, Stream Content)> files);
     void Delete(string fileName);

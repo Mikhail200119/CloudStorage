@@ -41,6 +41,18 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .ToListAsync();
     }
 
+    public async Task RenameFileAsync(int id, string newName)
+    {
+        var file = await Table.SingleOrDefaultAsync(file => file.Id == id);
+
+        if (file is null)
+        {
+            return;
+        }
+
+        file.ProvidedName = newName;
+    }
+
     public async Task<bool> ContentHashExist(string contentHash, string userEmail) => await Table.AnyAsync(file => file.ContentHash == contentHash && file.UploadedBy == userEmail);
     public async Task<bool> FileNameExist(string providedFileName, string userEmail) => await Table.AnyAsync(file => file.ProvidedName == providedFileName && file.UploadedBy == userEmail);
 

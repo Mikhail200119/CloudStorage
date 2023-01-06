@@ -12,4 +12,5 @@ public interface ICloudStorageManager
     Task<FileDescription> UpdateAsync(FileUpdateData existingFile);
     Task DeleteAsync(int id);
     Task<IEnumerable<FileDescription>> GetAllFilesAsync();
+    Task RenameFileAsync(int id, string newName);
 }
