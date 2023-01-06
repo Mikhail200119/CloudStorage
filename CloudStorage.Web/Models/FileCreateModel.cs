@@ -7,5 +7,5 @@ public class FileCreateModel
 {
     [Required]
     [FileContentRequired]
-    public IFormFile FormFile { get; set; }
+    public IEnumerable<IFormFile> FormFiles { get; set; }
 }

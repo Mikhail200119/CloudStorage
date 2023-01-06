@@ -1,7 +1,7 @@
-﻿@model CloudStorage.Web.Models.FileCreateModel
+﻿@model FileCreateModel
 
 <form asp-controller="Files" asp-action="Create" method="post" enctype="multipart/form-data">
-    <input asp-for="FormFile" type="file" name="FormFile" class="form-control"/>
+    <input asp-for="FormFiles" type="file" name="FormFiles" class="form-control" multiple/>
     <br/>
     <button class="upload-button" type="submit">Upload</button>
 </form>
