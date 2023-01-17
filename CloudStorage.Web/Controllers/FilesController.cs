@@ -76,11 +76,7 @@ public class FilesController : Controller
     [HttpGet]
     public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
-        await using var logFile = System.IO.File.Open(Path.Combine(_storageOptions.FilesDirectoryPath, "logs.txt"), FileMode.OpenOrCreate, FileAccess.Write);
-        await using var logFileWriter = new StreamWriter(logFile);
-        
         var content = await _cloudStorageManager.GetFileStreamAsync(id);
-        await logFileWriter.WriteLineAsync($"content is null: {content is null}, length: {content.Length}");
 
         return File(content, contentType, enableRangeProcessing: true);
     }
