@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +39,7 @@
   <ItemGroup>
     <Folder Include="Enums\" />
     <Folder Include="Helpers\" />
+    <Folder Include="Migrations" />
     <Folder Include="Migrations\" />
     <Folder Include="wwwroot\Files" />
     <Folder Include="wwwroot\Files\" />

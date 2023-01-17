@@ -6,7 +6,7 @@
 
 <p style="color: red; font-weight: bold">Error information:</p>
 <p><b>Message: </b>@Model.ExceptionModels.First().Message</p>
-@*<p><b>Request path:</b> @Model.RequestPath</p>
+<p><b>Request path:</b> @Model.RequestPath</p>
 <p><b>Trace identifier:</b> @Model.TraceIdentifier</p>
 @{
     var lastException = Model.ExceptionModels.LastOrDefault();
@@ -27,6 +27,6 @@
             <hr/>
         }
     }
-}*@
+}
 </body>
 </html>

@@ -18,9 +18,7 @@ public class ErrorViewModel
             var exceptionViewModel = new ExceptionViewModel(ex);
             if (!isDevelopmentEnvironment)
             {
-                exceptionViewModel.StackTrace = ex.StackTrace;
-                exceptionViewModel.Data = null;
-                exceptionViewModel.Type = ex.GetType().ToString();
+                exceptionViewModel.StackTrace = null;
             }
 
             exceptions.Add(exceptionViewModel);

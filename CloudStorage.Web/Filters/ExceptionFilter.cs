@@ -1,19 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using CloudStorage.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using System.Net;
-using CloudStorage.Web.Models;
 
 namespace CloudStorage.Web.Filters;
 
 public class ExceptionFilter : IExceptionFilter
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
+    private readonly IHostEnvironment _hostEnvironment;
 
-    public ExceptionFilter(IModelMetadataProvider modelMetadataProvider)
+    public ExceptionFilter(IModelMetadataProvider modelMetadataProvider, IHostEnvironment hostEnvironment)
     {
         _modelMetadataProvider = modelMetadataProvider;
+        _hostEnvironment = hostEnvironment;
     }
 
     public void OnException(ExceptionContext context)
@@ -24,7 +26,7 @@ public class ExceptionFilter : IExceptionFilter
             StatusCode = (int)HttpStatusCode.BadRequest,
             ViewData = new ViewDataDictionary(_modelMetadataProvider, context.ModelState)
             {
-                Model = new ErrorViewModel(context.Exception, context.HttpContext, false)
+                Model = new ErrorViewModel(context.Exception, context.HttpContext, _hostEnvironment.IsDevelopment())
             }
         };
     }

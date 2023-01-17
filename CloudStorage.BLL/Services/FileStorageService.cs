@@ -1,8 +1,8 @@
 ﻿using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
-using CloudStorage.Common.Extensions;
 using Microsoft.Extensions.Options;
 using Xabe.FFmpeg;
+using Xabe.FFmpeg.Downloader;
 
 namespace CloudStorage.BLL.Services;
 
@@ -97,22 +97,15 @@ public class FileStorageService : IFileStorageService
     {
         var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
         var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{Guid.NewGuid()}.jpeg");
-
-        //var decryptedFile = await GetFileAsync(filePath);
-        var decryptedFile = await GetStreamAsync(fileName);
-
-        var tmpFileName = Guid.NewGuid().ToString();
-        var tmpFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, tmpFileName);
-        await UploadFileAsync(tmpFilePath, decryptedFile.ToArray(), encrypt: false);
-
+        
+        await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Full, _storageOptions.FFmpegExecutablesPath);
         FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath);
 
-        var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tmpFilePath, outputFilePath, TimeSpan.FromSeconds(0));
+        var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(filePath, outputFilePath, TimeSpan.FromSeconds(0));
         await conversion.Start();
 
         var thumbnail = await GetFileAsync(outputFilePath, decrypt: false);
         Delete(outputFilePath);
-        Delete(tmpFileName);
 
         return thumbnail;
     }

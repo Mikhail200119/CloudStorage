@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
+using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -15,11 +17,13 @@ public class FilesController : Controller
 
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
+    private readonly FileStorageOptions _storageOptions;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper)
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IOptions<FileStorageOptions> storageOptions)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
+        _storageOptions = storageOptions.Value;
     }
 
     [HttpGet]
@@ -72,7 +76,11 @@ public class FilesController : Controller
     [HttpGet]
     public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
+        await using var logFile = System.IO.File.Open(Path.Combine(_storageOptions.FilesDirectoryPath, "logs.txt"), FileMode.OpenOrCreate, FileAccess.Write);
+        await using var logFileWriter = new StreamWriter(logFile);
+        
         var content = await _cloudStorageManager.GetFileStreamAsync(id);
+        await logFileWriter.WriteLineAsync($"content is null: {content is null}, length: {content.Length}");
 
         return File(content, contentType, enableRangeProcessing: true);
     }
