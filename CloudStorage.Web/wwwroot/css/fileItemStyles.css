@@ -114,10 +114,10 @@
     background-color: green;
 }
 
-/*body {
-   !* background-image: url('/background.png');*!
+body {
+   /* background-image: url('/background.png');*/
     user-select: none;
-}*/
+}
 
 footer {
     margin-top: -200%;
@@ -146,4 +146,28 @@ div.dropdown.m-2 {
     height: 500px;
     width: 1000px;
     object-fit: contain;
+}
+
+#context-menu {
+    position: fixed;
+    z-index: 10000;
+    width: 150px;
+    border-radius: 15px;
+    display: none;
+    background: #25cff2;
+}
+
+#context-menu.visible {
+    display: block;
+}
+
+#context-menu .option {
+    border-radius: inherit;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 15px;
+}
+
+#context-menu .option:hover {
+    background: #20c997;
 }
