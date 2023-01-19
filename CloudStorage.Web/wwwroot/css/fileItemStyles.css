@@ -59,7 +59,6 @@
 
 .fileItem:hover {
     background-color: gray;
-    height: 180px;
     transform: scale(1.1, 1.1);
 }
 
@@ -153,12 +152,14 @@ div.dropdown.m-2 {
     z-index: 10000;
     width: 150px;
     border-radius: 15px;
-    display: none;
     background: #25cff2;
+    transform: scale(0);
+    transform-origin: top left;
 }
 
 #context-menu.visible {
-    display: block;
+    transform: scale(1);
+    transition: transform 200ms ease-in-out;
 }
 
 #context-menu .option {

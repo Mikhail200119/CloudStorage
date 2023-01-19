@@ -65,14 +65,14 @@ public class FilesController : Controller
         return RedirectToAction(nameof(ViewAllFiles));
     }
 
-    [HttpPost]
+    [HttpDelete]
     public async Task<IActionResult> Delete(int id)
     {
         await _cloudStorageManager.DeleteAsync(id);
 
-        return RedirectToAction(nameof(ViewAllFiles));
+        return Ok();
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
@@ -81,10 +81,11 @@ public class FilesController : Controller
         return File(content, contentType, enableRangeProcessing: true);
     }
 
+    [HttpPut]
     public async Task<IActionResult> RenameFile(int id, string newName)
     {
         await _cloudStorageManager.RenameFileAsync(id, newName);
 
-        return RedirectToAction(nameof(ViewAllFiles));
+        return Ok();
     }
 }

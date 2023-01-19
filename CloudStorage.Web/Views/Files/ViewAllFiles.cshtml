@@ -10,12 +10,18 @@
     };
 }
 
+<script src="js/displayFile.js"></script>
+<script src="js/searchFiles.js?v1"></script>
+<script src="js/sortFiles.js"></script>
+<script src="js/selectingFiles.js?v1"></script>
+<script src="js/contextMenuOperations.js"></script>
+<script src="js/site.js?v1"></script>
+
 <div id="myOverlay"></div>
 
 <div id="context-menu">
-    <div id="rename-Option" class="option">Rename</div>
-    <div class="option">Delete</div>
-    <div class="option">Download</div>
+    <div id="rename-option" class="option" onclick="onFileRename()">Rename</div>
+    <div class="option" onclick="onFileDelete()">Delete</div>
 </div>
 
 <div id="view-all-files-url" style="display: none">
@@ -88,9 +94,9 @@
                         <div id="fileName" class="fileName">@file.ProvidedName</div>
                         <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
                         <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
-                        <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
+                        @*<form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
                             <button class="deleteButton" type="submit">Delete</button>
-                        </form>
+                        </form>*@
                     </div>
                 </div>
             </div>
@@ -106,52 +112,11 @@
     @Url.ActionLink("RenameFile", "Files")
 </div>
 
-<div id="rename-file-form" style="display: none">
-    <form asp-controller="Files" asp-action="RenameFile" method="post">
-        <input id="file-id-input" type="text"/>
-        <input id="new-file-name-input" type="text"/>
-        <button type="submit">Rename</button>
-    </form>
+<div id="delete-file-url" style="display: none">
+    @Url.ActionLink("Delete", "Files")
 </div>
 
 <script>
+    setupContextMenu();
     document.getElementById("sortWayButton").textContent = "Date";
 </script>
-
-<script>
-    const contextMenu = document.getElementById("context-menu");
-    const fileItems = document.querySelectorAll("div[class=fileItem]");
-    Array.from(fileItems)
-        .forEach(fileItem =>
-        {
-            fileItem.addEventListener("contextmenu", event =>
-            {
-               event.preventDefault(); 
-               
-               const { clientX: mouseX, clientY: mouseY } = event;
-               contextMenu.style.top = `${mouseY}px`;
-               contextMenu.style.left = `${mouseX}px`;
-               
-               const handler = (fileItem) => onFileRename(fileItem);
-                              
-               contextMenu.querySelector("div[id=rename-Option]")
-                    .addEventListener("click", handler);
-               
-               contextMenu.classList.add("visible");
-            });
-        });
-    
-    const html = document.querySelector("html");
-    html.addEventListener("click", () => 
-    {
-       document.getElementById("context-menu").classList.remove("visible"); 
-       document.getElementById("context-menu").querySelector("div[id=rename-Option]")
-       .removeEventListener("click",  )
-    });
-</script>
-
-<script src="js/displayFile.js"></script>
-<script src="js/searchFiles.js?v1"></script>
-<script src="js/sortFiles.js"></script>
-<script src="js/selectingFiles.js?v1"></script>
-<script src="js/renameFiles.js"></script>
