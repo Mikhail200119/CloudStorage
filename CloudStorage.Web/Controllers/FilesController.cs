@@ -65,14 +65,14 @@ public class FilesController : Controller
         return RedirectToAction(nameof(ViewAllFiles));
     }
 
-    [HttpPost]
+    [HttpDelete]
     public async Task<IActionResult> Delete(int id)
     {
         await _cloudStorageManager.DeleteAsync(id);
 
-        return RedirectToAction(nameof(ViewAllFiles));
+        return Ok();
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetFileContent(int id, string contentType)
     {
@@ -86,6 +86,6 @@ public class FilesController : Controller
     {
         await _cloudStorageManager.RenameFileAsync(id, newName);
 
-        return RedirectToAction(nameof(ViewAllFiles));
+        return Ok();
     }
 }

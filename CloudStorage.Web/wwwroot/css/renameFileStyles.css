@@ -1,0 +1,32 @@
+﻿.rename-file-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 100px;
+}
+
+.rename-file-container input {
+    border-radius: 7px;
+    border: 2px solid red;
+    width: 300px;
+}
+
+.rename-button {
+    border: 2px solid black;
+    border-radius: 13px;
+    transition: 0.3s;
+}
+
+.cancel-button {
+    border: 2px solid black;
+    border-radius: 13px;
+    transition: 0.3s;
+}
+
+.rename-button:hover {
+    background-color: green;
+}
+
+.cancel-button:hover {
+    background-color: blue;
+}

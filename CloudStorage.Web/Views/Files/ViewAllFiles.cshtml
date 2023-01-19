@@ -10,7 +10,19 @@
     };
 }
 
+<script src="js/displayFile.js"></script>
+<script src="js/searchFiles.js?v1"></script>
+<script src="js/sortFiles.js"></script>
+<script src="js/selectingFiles.js?v1"></script>
+<script src="js/contextMenuOperations.js"></script>
+<script src="js/site.js?v1"></script>
+
 <div id="myOverlay"></div>
+
+<div id="context-menu">
+    <div id="rename-option" class="option" onclick="onFileRename()">Rename</div>
+    <div class="option" onclick="onFileDelete()">Delete</div>
+</div>
 
 <div id="view-all-files-url" style="display: none">
     @Url.Action("ViewAllFiles", "Files")
@@ -50,11 +62,9 @@
         {
             var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
 
-            //var fileSrc = $"/Files/get-content?id={file.Id}&&contentType={file.ContentType}";
-
             <div class="list-inline-item">
                 <div class="fileItemBox">
-                    <div id="fileDescription" class="fileItem" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName" onmouseover="onFileEnter(this)" onmouseout="onFileLeave(this)">
+                    <div id="fileDescription" class="fileItem" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName">
                         <div class="fileImageBox">
 
                             @{
@@ -80,12 +90,13 @@
 
                         </div>
 
+                        <div id="fileId" style="display: none">@file.Id</div>
                         <div id="fileName" class="fileName">@file.ProvidedName</div>
                         <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
                         <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
-                        <form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
+                        @*<form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
                             <button class="deleteButton" type="submit">Delete</button>
-                        </form>
+                        </form>*@
                     </div>
                 </div>
             </div>
@@ -97,12 +108,15 @@
     @Html.ActionLink("Upload new file...", "Create", "Files")
 </div>
 
+<div id="rename-file-url" style="display: none">
+    @Url.ActionLink("RenameFile", "Files")
+</div>
+
+<div id="delete-file-url" style="display: none">
+    @Url.ActionLink("Delete", "Files")
+</div>
+
 <script>
+    setupContextMenu();
     document.getElementById("sortWayButton").textContent = "Date";
-
 </script>
-
-<script src="js/displayFile.js"></script>
-<script src="js/searchFiles.js?v1"></script>
-<script src="js/sortFiles.js"></script>
-<script src="js/selectingFiles.js?v1"></script>

@@ -99,7 +99,7 @@ public class FileStorageService : IFileStorageService
         var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{Guid.NewGuid()}.jpeg");
         
         await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Full, _storageOptions.FFmpegExecutablesPath);
-        FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath);
+        FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath, "ffmpeg.exe", "ffprobe.exe");
 
         var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(filePath, outputFilePath, TimeSpan.FromSeconds(0));
         await conversion.Start();
