@@ -70,7 +70,7 @@
                             @{
                                 string source;
 
-                                if (file.Preview.Length == 0)
+                                if (file.Thumbnail.Length == 0)
                                 {
                                     source = file.ContentType switch
                                     {
@@ -82,7 +82,7 @@
                                 }
                                 else
                                 {
-                                    source = GetPath(file.Preview);
+                                    source = GetPath(file.Thumbnail);
                                 }
                             }
 

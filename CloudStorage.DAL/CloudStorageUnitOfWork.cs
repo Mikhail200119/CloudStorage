@@ -8,6 +8,7 @@ namespace CloudStorage.DAL;
 public class CloudStorageUnitOfWork : DbContext, ICloudStorageUnitOfWork
 {
     private IFileDescriptionRepository? _fileDescriptionRepository;
+    private IThumbnailInfoRepository? _thumbnailInfoRepository;
 
     private DbSet<FileDescriptionDbModel> FileDescriptionTable { get; set; }
 
@@ -16,6 +17,7 @@ public class CloudStorageUnitOfWork : DbContext, ICloudStorageUnitOfWork
     }
 
     public IFileDescriptionRepository FileDescription => _fileDescriptionRepository ??= new FileDescriptionRepository(this);
+    public IThumbnailInfoRepository ThumbnailInfo => _thumbnailInfoRepository ??= new ThumbnailInfoRepository(this);
 
     public async Task SaveChangesAsync() => await base.SaveChangesAsync();
 }
