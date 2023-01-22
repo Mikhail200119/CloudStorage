@@ -29,6 +29,7 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
     {
         return await Table
             .AsNoTracking()
+            .Include(file => file.ThumbnailInfo)
             .SingleOrDefaultAsync(file => file.Id == id);
     }
 
@@ -38,6 +39,7 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
 
         return await files
             .Where(file => file.UploadedBy == email)
+            .Include(file => file.ThumbnailInfo)
             .ToListAsync();
     }
 

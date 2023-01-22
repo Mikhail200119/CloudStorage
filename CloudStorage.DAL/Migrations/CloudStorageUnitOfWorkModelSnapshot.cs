@@ -42,9 +42,6 @@ namespace CloudStorage.DAL.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<byte[]>("Preview")
-                        .HasColumnType("bytea");
-
                     b.Property<string>("ProvidedName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -63,6 +60,46 @@ namespace CloudStorage.DAL.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FileDescription");
+                });
+
+            modelBuilder.Entity("CloudStorage.DAL.Entities.ThumbnailInfoDbModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("ThumbnailId");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FileDescriptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UniqueName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileDescriptionId")
+                        .IsUnique();
+
+                    b.ToTable("ThumbnailInfoDbModel");
+                });
+
+            modelBuilder.Entity("CloudStorage.DAL.Entities.ThumbnailInfoDbModel", b =>
+                {
+                    b.HasOne("CloudStorage.DAL.Entities.FileDescriptionDbModel", "FileDescription")
+                        .WithOne("ThumbnailInfo")
+                        .HasForeignKey("CloudStorage.DAL.Entities.ThumbnailInfoDbModel", "FileDescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileDescription");
+                });
+
+            modelBuilder.Entity("CloudStorage.DAL.Entities.FileDescriptionDbModel", b =>
+                {
+                    b.Navigation("ThumbnailInfo")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

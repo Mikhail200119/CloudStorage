@@ -8,12 +8,10 @@ namespace CloudStorage.BLL.Services;
 
 public class FileStorageService : IFileStorageService
 {
-    private readonly IAesEncryptor _aesEncryptor;
     private readonly FileStorageOptions _storageOptions;
 
-    public FileStorageService(IAesEncryptor aesEncryptor, IOptions<FileStorageOptions> fileStorageOptions)
+    public FileStorageService(IOptions<FileStorageOptions> fileStorageOptions)
     {
-        _aesEncryptor = aesEncryptor;
         _storageOptions = fileStorageOptions.Value;
     }
 
@@ -56,7 +54,7 @@ public class FileStorageService : IFileStorageService
         }
     }
 
-    public async Task DeleteRange(params string[] fileNames)
+    public async Task DeleteRangeAsync(params string[] fileNames)
     {
         foreach (var fileName in fileNames)
         {
@@ -70,13 +68,6 @@ public class FileStorageService : IFileStorageService
                 }
             });
         }
-    }
-
-    public async Task<byte[]> GetAsync(string fileName)
-    {
-        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
-
-        return await GetFileAsync(filePath);
     }
 
     public async Task<Stream> GetStreamAsync(string fileName)
@@ -93,43 +84,22 @@ public class FileStorageService : IFileStorageService
         return file;
     }
 
-    public async Task<byte[]> GetVideoThumbnailAsync(string fileName)
+    public async Task CreateVideoThumbnailAsync(string existingFileName, string thumbName)
     {
-        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
-        var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{Guid.NewGuid()}.jpeg");
+        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, existingFileName);
+        var outputFilePath = Path.Combine(_storageOptions.FilesDirectoryPath, $"{thumbName}.jpeg");
         
         await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Full, _storageOptions.FFmpegExecutablesPath);
         FFmpeg.SetExecutablesPath(_storageOptions.FFmpegExecutablesPath, "ffmpeg.exe", "ffprobe.exe");
-
+        
         var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(filePath, outputFilePath, TimeSpan.FromSeconds(0));
         await conversion.Start();
 
-        var thumbnail = await GetFileAsync(outputFilePath, decrypt: false);
+        await using var compressedImage = await this.GetCompressedImage($"{thumbName}.jpeg");
+        compressedImage.Seek(0, SeekOrigin.Begin);
         Delete(outputFilePath);
-
-        return thumbnail;
-    }
-
-    private async Task UploadFileAsync(string filePath, byte[] data, bool encrypt = true)
-    {
-        if (encrypt)
-        {
-            data = await _aesEncryptor.EncryptAsync(data);
-        }
-
-        await using var file = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-
-        await file.WriteAsync(data);
-    }
-
-    private async Task<byte[]> GetFileAsync(string filePath, bool decrypt = true)
-    {
-        await using var file = File.OpenRead(filePath);
-
-        var data = new byte[file.Length];
-
-        await file.ReadAsync(data);
-
-        return decrypt ? await _aesEncryptor.DecryptAsync(data) : data;
+        var finalOutputPath = Path.Combine(_storageOptions.FilesDirectoryPath, thumbName);
+        await using var finalThumbnail = File.Create(finalOutputPath);
+        await compressedImage.CopyToAsync(finalThumbnail);
     }
 }
