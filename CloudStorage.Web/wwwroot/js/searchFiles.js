@@ -5,12 +5,15 @@
             const fileNameDiv = fileBox.querySelector("div[id=fileDescription]")
                 .querySelector("div[id=fileName]");
 
+            const parent = fileBox.parentElement;
+            console.log(parent);
+            
             if (fileNameDiv.innerText.includes(element.value)) {
-                if (fileBox.getAttribute("hidden")) {
-                    fileBox.removeAttribute("hidden");
+                if (fileBox.parentElement.getAttribute("hidden")) {
+                    fileBox.parentElement.removeAttribute("hidden");
                 }
             } else {
-                fileBox.setAttribute("hidden", "hidden");
+                fileBox.parentElement.setAttribute("hidden", "hidden");
             }
         });
 }

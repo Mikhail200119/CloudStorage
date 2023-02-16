@@ -3,6 +3,7 @@ using CloudStorage.DAL.Entities.Interfaces;
 
 namespace CloudStorage.DAL.Entities;
 
+[Table(("ThumbnailInfo"))]
 public class ThumbnailInfoDbModel : IEntity
 {
     [Column("ThumbnailId")]

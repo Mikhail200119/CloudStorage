@@ -5,7 +5,9 @@
 
     const files = document
         .getElementById("filesContainer")
-        .querySelectorAll("div[class=fileItemBox]");
+        .querySelectorAll("div[class=list-inline-item]");
+    
+    console.log(files);
 
     const divs = [];
 
@@ -47,7 +49,9 @@ function sortFilesBySize(divs) {
             const secondValue = parseInt(b.querySelector("div[id=fileDescription]").querySelector("div[id=fileSize]")
                 .textContent);
 
-            if (firstValue > secondValue) {
+            return firstValue > secondValue ? 1 : (firstValue < secondValue ? -1 : 0);
+            
+           /* if (firstValue > secondValue) {
                 return 1;
             }
 
@@ -55,7 +59,7 @@ function sortFilesBySize(divs) {
                 return -1;
             }
 
-            return 0;
+            return 0;*/
         }
     );
 }
@@ -65,7 +69,9 @@ function sortFilesByDate(divs) {
         const firstDate = new Date(Date.parse(a.querySelector("div[id=fileDescription]").querySelector("div[id=fileCreatedDate]").textContent));
         const secondDate = new Date(Date.parse(b.querySelector("div[id=fileDescription]").querySelector("div[id=fileCreatedDate]").textContent));
 
-        if (firstDate > secondDate) {
+        return firstDate > secondDate ? 1 : (firstDate < secondDate ? -1 : 0);
+        
+       /* if (firstDate > secondDate) {
             return 1;
         }
 
@@ -73,6 +79,6 @@ function sortFilesByDate(divs) {
             return -1;
         }
 
-        return 0;
+        return 0;*/
     });
 }

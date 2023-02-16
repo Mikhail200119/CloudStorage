@@ -134,7 +134,13 @@ public class CloudStorageManager : ICloudStorageManager
         var allFilesAsync = files as FileDescription[] ?? files.ToArray();
         foreach (var file in allFilesAsync)
         {
-            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo.UniqueName;
+            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
+
+            if (thumbnailName is null)
+            {
+                continue;
+            }
+            
             file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName);
         }
 

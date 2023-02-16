@@ -3,14 +3,14 @@
     overlayElement.style.display = "block";
     
     let file = null;
-
-    if (contentType === "image/png") {
+    alert("start");
+    if (isImage(contentType)) {
         file = document.createElement("img");
-    } else if (contentType === "video/mp4") {
+    } else if (isVideo(contentType)) {
         file = document.createElement("video");
         file.setAttribute("class", "file-video-player");
         file.setAttribute("controls", "");
-    } else if (contentType === "text/plain") {
+    } else if (isText(contentType)) {
         file = document.createElement("iframe");
     }
 
@@ -35,12 +35,6 @@
 
     overlayElement.appendChild(divElement);
     overlayElement.appendChild(closeButton);
-
-    /* alert("before onload subscription");
-     file.setAttribute("onload", "onMediaLoaded(this)");
-     alert("after onload subscription");*/
-
-    // alert("captureStream() call");
 }
 
 function closeFileOverlay() {

@@ -3,6 +3,10 @@
     width: 30px;
 }
 
+#files {
+    
+}
+
 #myOverlay {
     position: fixed;
     display: none;

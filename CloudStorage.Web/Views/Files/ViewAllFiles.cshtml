@@ -10,12 +10,12 @@
     };
 }
 
-<script src="js/displayFile.js"></script>
-<script src="js/searchFiles.js?v1"></script>
-<script src="js/sortFiles.js"></script>
-<script src="js/selectingFiles.js?v1"></script>
+<script src="js/displayFile.js?v1"></script>
+<script src="js/searchFiles.js"></script>
+<script src="js/sortFiles.js?v2"></script>
 <script src="js/contextMenuOperations.js"></script>
 <script src="js/site.js?v1"></script>
+<script src="js/ContentTypesConstants.js"></script>
 
 <div id="myOverlay"></div>
 
@@ -119,4 +119,5 @@
 <script>
     setupContextMenu();
     document.getElementById("sortWayButton").textContent = "Date";
+    sortFilesByDate(document.querySelectorAll("div[class=fileItemBox]"));
 </script>
