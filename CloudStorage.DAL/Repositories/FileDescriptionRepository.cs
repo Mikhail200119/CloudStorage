@@ -33,6 +33,14 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .SingleOrDefaultAsync(file => file.Id == id);
     }
 
+    public void DeleteRange(IEnumerable<int> ids)
+    {
+        var entities = Table.AsNoTracking()
+            .Where(item => ids.Contains(item.Id));
+
+        Table.RemoveRange(entities);
+    }
+
     public async Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false)
     {
         var files = trackEntities ? Table : Table.AsNoTracking();
@@ -41,6 +49,12 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
             .Where(file => file.UploadedBy == email)
             .Include(file => file.ThumbnailInfo)
             .ToListAsync();
+    }
+
+    public IQueryable<FileDescriptionDbModel> GetAllFilesAsQueryable(string email)
+    {
+        return Table.AsNoTracking()
+            .Include(file => file.ThumbnailInfo);
     }
 
     public async Task RenameFileAsync(int id, string newName)

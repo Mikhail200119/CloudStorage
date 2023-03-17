@@ -1,25 +1,32 @@
 ﻿function handleFileDoubleClick(fileSrc, contentType) {
     const overlayElement = document.getElementById("myOverlay");
     overlayElement.style.display = "block";
-    
+
     let file = null;
-    alert("start");
+
     if (isImage(contentType)) {
         file = document.createElement("img");
+        file.setAttribute("src", `${fileSrc}`);
     } else if (isVideo(contentType)) {
         file = document.createElement("video");
         file.setAttribute("class", "file-video-player");
         file.setAttribute("controls", "");
+        file.setAttribute("src", `${fileSrc}`);
     } else if (isText(contentType)) {
-        file = document.createElement("iframe");
+        //file = document.createElement("iframe");
+        //file.setAttribute("type", contentType);
+        //file.style = "height: 700px; width: 1000px; object-fit: contain;";
+        //file.setAttribute("src", `${fileSrc}`);
+        const src = `https://view.officeapps.live.com/op/embed.aspx?src=http://remote.url.tld${fileSrc}`;
+        file = document.getElementById("office-documents-viewer");
+        file.style.display = "block";
+        file.setAttribute("src", `${src}`);
     }
 
     if (file === null) {
+        closeFileOverlay();
         return;
     }
-
-    file.src = fileSrc;
-    file.setAttribute("src", `${fileSrc}`);
 
     const closeButton = document.createElement("button");
     closeButton.textContent = "X";
@@ -39,14 +46,8 @@
 
 function closeFileOverlay() {
     const overlay = document.getElementById("myOverlay");
-    const videoElement = overlay.querySelector("div[id=overlayFile] video");
-    
-    if (videoElement !== null) {
-        videoElement.pause();
-        videoElement.removeAttribute("src");
-        videoElement.load();
-    }
-    
     overlay.style.display = "none";
     overlay.innerHTML = "";
+
+    document.getElementById("office-documents-viewer").style.display = "none";
 }

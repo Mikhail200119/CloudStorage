@@ -10,12 +10,13 @@
     };
 }
 
-<script src="js/displayFile.js?v1"></script>
+<script src="js/displayFile.js?v18"></script>
 <script src="js/searchFiles.js"></script>
 <script src="js/sortFiles.js?v2"></script>
-<script src="js/contextMenuOperations.js"></script>
-<script src="js/site.js?v1"></script>
-<script src="js/ContentTypesConstants.js"></script>
+<script src="js/contextMenuOperations.js?v9"></script>
+<script src="js/site.js?v6"></script>
+<script src="js/ContentTypesConstants.js?v3"></script>
+<script src="js/DeleteFiles.js?v6"></script>
 
 <div id="myOverlay"></div>
 
@@ -57,14 +58,19 @@
 }
 
 <div id="files">
+    <div id="no-uploaded-files-info" style="font-size: 20px; margin: 50px; font-style: normal; display: none;">
+        No files uploaded...
+    </div>
+        
     <div id="filesContainer" class="list-group-horizontal-lg">
         @foreach (var file in Model)
         {
-            var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+            //var fileSrc = @Url.Action("GetFileContent", "Files", new { id = file.Id, contentType = file.ContentType });
+            var fileSrc = Url.Action("GetFileContent", "Files") + $"/{file.Id}";
 
             <div class="list-inline-item">
                 <div class="fileItemBox">
-                    <div id="fileDescription" class="fileItem" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName">
+                    <div id="fileDescription" class="fileItem" onclick="onSelectingFile(this)" ondblclick="handleFileDoubleClick('@fileSrc', '@file.ContentType')" aria-label="@file.ProvidedName">
                         <div class="fileImageBox">
 
                             @{
@@ -77,6 +83,8 @@
                                         FileContentTypes.Image.Png => "image icon.png",
                                         FileContentTypes.Video.Mp4 => "video icon.jpg",
                                         FileContentTypes.Text.Plain => "document icon.png",
+                                        FileContentTypes.Application.Pdf => "pdf-icon.png",
+                                        FileContentTypes.Application.MsWord => "word-icon.png",
                                         _ => string.Empty
                                         };
                                 }
@@ -95,18 +103,25 @@
                         <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
                         <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
                         @*<form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
-                            <button class="deleteButton" type="submit">Delete</button>
-                        </form>*@
+                                <button class="deleteButton" type="submit">Delete</button>
+                            </form>*@
                     </div>
                 </div>
             </div>
         }
     </div>
 </div>
-
-<div>
-    @Html.ActionLink("Upload new file...", "Create", "Files")
+    
+    <iframe id="office-documents-viewer" style="display: none;" width='1366px' height='623px' frameborder='0'>This is an embedded <a target='_blank' href='http://office.com'>Microsoft Office</a> document, powered by <a target='_blank' href='http://office.com/webapps'>Office Online</a>.</iframe>
+    
+<br/>
+<div style="display: inline-block;">
+    @{
+        await Html.RenderPartialAsync("Create", new FileCreateModel());
+    }
 </div>
+
+<button id="delete-files-button" style="display: none;" onclick="onDeletingFile()">Delete</button>
 
 <div id="rename-file-url" style="display: none">
     @Url.ActionLink("RenameFile", "Files")
@@ -118,6 +133,8 @@
 
 <script>
     setupContextMenu();
+    checkNumberOfFileItems();
     document.getElementById("sortWayButton").textContent = "Date";
-    sortFilesByDate(document.querySelectorAll("div[class=fileItemBox]"));
+    //sortFilesByDate(document.querySelectorAll("div[class=fileItemBox]"));
+    //setFilesScopeHeight();
 </script>

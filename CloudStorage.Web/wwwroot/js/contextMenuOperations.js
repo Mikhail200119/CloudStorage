@@ -58,10 +58,6 @@ async function onFileDelete() {
         .catch(() => console.log("An error during deleting file occured"));
 }
 
-function removeFileItemOnPage(fileId) {
-    getFileByIdFromPage(fileId).parentElement.remove();
-}
-
 function renameFileInPage(fileId, newName) {
     const fileItemToRename = getFileByIdFromPage(fileId);
     fileItemToRename.querySelector("div[id=fileName]").textContent = newName;

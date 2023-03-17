@@ -5,6 +5,7 @@ using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.BLL.Services;
 
@@ -55,7 +56,7 @@ public class CloudStorageManager : ICloudStorageManager
         }
 
         await _fileStorageService.UploadRangeAsync(namesWithContents);
-        
+
         var dbModelsWithContent = dbModelsToUpload.Select(model =>
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
@@ -76,7 +77,7 @@ public class CloudStorageManager : ICloudStorageManager
             var uniqueNames = dbModelsToUpload
                 .Select(file => file.UniqueName)
                 .ToArray();
-            
+
             await _fileStorageService.DeleteRangeAsync(uniqueNames);
 
             throw;
@@ -90,6 +91,7 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task<Stream> GetFileStreamAsync(int fileId)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+        ValidateUserPermissions(item);
 
         var content = await _fileStorageService.GetStreamAsync(item.UniqueName);
 
@@ -111,6 +113,7 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task DeleteAsync(int id)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
+        ValidateUserPermissions(item);
 
         if (item is null)
         {
@@ -122,17 +125,62 @@ public class CloudStorageManager : ICloudStorageManager
         await _cloudStorageUnitOfWork.SaveChangesAsync();
 
         _fileStorageService.Delete(item.UniqueName);
-        _fileStorageService.Delete(item.ThumbnailInfo.UniqueName);
+
+        if (item.ThumbnailInfo is not null)
+        {
+            _fileStorageService.Delete(item.ThumbnailInfo.UniqueName);
+        }
+    }
+
+    public async Task DeleteRangeAsync(IEnumerable<int> ids)
+    {
+        var fileIds = ids.ToArray();
+        _cloudStorageUnitOfWork.FileDescription.DeleteRange(fileIds);
+        
+        var filesToDelete = _cloudStorageUnitOfWork.FileDescription
+            .GetAllFilesAsQueryable(_userService.Current.Email)
+            .AsNoTracking()
+            .Where(file => ids.Contains(file.Id))
+            .ToArray();
+
+        ValidateUserPermissions(filesToDelete);
+
+        await _fileStorageService.DeleteRangeAsync(filesToDelete.Select(file => file.UniqueName).ToArray());
+
+        var thumbs = filesToDelete
+            .Where(file => file.ThumbnailInfo is not null)
+            .Select(file => file.ThumbnailInfo!.UniqueName)
+            .ToArray();
+
+        await _fileStorageService.DeleteRangeAsync(thumbs);
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
         var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
+        ValidateUserPermissions(filesDbModel.ToArray());
 
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
         var allFilesAsync = files as FileDescription[] ?? files.ToArray();
-        foreach (var file in allFilesAsync)
+
+        var getThumbTasks = allFilesAsync.Select(file =>
+        {
+            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
+
+            if (thumbnailName is null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Task.Run(async () =>
+                file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName));
+        });
+
+        await Task.WhenAll(getThumbTasks);
+        
+        /*foreach (var file in allFilesAsync)
         {
             var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
 
@@ -140,9 +188,9 @@ public class CloudStorageManager : ICloudStorageManager
             {
                 continue;
             }
-            
+
             file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName);
-        }
+        }*/
 
         return allFilesAsync;
     }
@@ -161,7 +209,7 @@ public class CloudStorageManager : ICloudStorageManager
 
         if (contentHashesExist)
         {
-            throw new FileContentDuplicationException("A file with such content is already exist.");
+            throw new FileContentDuplicationException("A file with such content already exists.");
         }
 
         var fileNames = fileDbModel.Select(file => file.ProvidedName);
@@ -188,9 +236,19 @@ public class CloudStorageManager : ICloudStorageManager
                 {
                     UniqueName = thumbName
                 };
-                
+
                 await _fileStorageService.CreateVideoThumbnailAsync(dbModel.UniqueName, thumbName);
             }
+        }
+    }
+
+    private void ValidateUserPermissions(params FileDescriptionDbModel[]? files)
+    {
+        var currentUser = _userService.Current.Email;
+
+        if (files?.Any(file => file.UploadedBy != currentUser) == true)
+        {
+            throw new UnauthorizedUserException("Current user does not have access to some files.");
         }
     }
 }

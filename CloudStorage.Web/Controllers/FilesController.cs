@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
-using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -17,13 +15,11 @@ public class FilesController : Controller
 
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
-    private readonly FileStorageOptions _storageOptions;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IOptions<FileStorageOptions> storageOptions)
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
-        _storageOptions = storageOptions.Value;
     }
 
     [HttpGet]
@@ -66,19 +62,19 @@ public class FilesController : Controller
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete([FromQuery] IEnumerable<int> ids)
     {
-        await _cloudStorageManager.DeleteAsync(id);
+        await _cloudStorageManager.DeleteRangeAsync(ids);
 
         return Ok();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetFileContent(int id, string contentType)
+    [HttpGet("/Files/GetFileContent/{id:int}")]
+    public async Task<IActionResult> GetFileContent([FromRoute] int id)
     {
         var content = await _cloudStorageManager.GetFileStreamAsync(id);
 
-        return File(content, contentType, enableRangeProcessing: true);
+        return File(content, "application/octet-stream");
     }
 
     [HttpPut]

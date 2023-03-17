@@ -60,6 +60,11 @@ public class FileStorageService : IFileStorageService
         {
             await Task.Run(() =>
             {
+                if (fileName is null)
+                {
+                    return;
+                }
+            
                 var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, fileName);
 
                 if (File.Exists(filePath))
@@ -81,7 +86,7 @@ public class FileStorageService : IFileStorageService
             Share = FileShare.Delete | FileShare.Read
         });
 
-        return file;
+        return await Task.FromResult(file);
     }
 
     public async Task CreateVideoThumbnailAsync(string existingFileName, string thumbName)

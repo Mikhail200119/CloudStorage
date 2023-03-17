@@ -1,7 +1,8 @@
 ﻿@model FileCreateModel
 
-<form asp-controller="Files" asp-action="Create" method="post" enctype="multipart/form-data">
-    <input asp-for="FormFiles" type="file" name="FormFiles" class="form-control" multiple/>
-    <br/>
-    <button class="upload-button" type="submit">Upload</button>
+<form id="file-upload-form" asp-controller="Files" asp-action="Create" method="post" enctype="multipart/form-data">
+    <label class="upload-file-input">
+        <input asp-for="FormFiles" type="file" name="FormFiles" multiple onchange="form.submit()"/>
+        Upload
+    </label>
 </form>
