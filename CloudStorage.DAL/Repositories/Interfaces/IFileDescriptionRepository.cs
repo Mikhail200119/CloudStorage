@@ -10,7 +10,9 @@ public interface IFileDescriptionRepository
     Task<FileDescriptionDbModel?> GetByIdAsync(int id);
     void Update(FileDescriptionDbModel fileDescription);
     void Delete(int id);
+    void DeleteRange(IEnumerable<int> ids);
     Task<IEnumerable<FileDescriptionDbModel>> GetAllFilesAsync(string email, bool trackEntities = false);
+    IQueryable<FileDescriptionDbModel> GetAllFilesAsQueryable(string email);
     Task RenameFileAsync(int id, string newName);
     Task<bool> ContentHashExist(string contentHash, string userEmail);
     Task<bool> FileNameExist(string providedFileName, string userEmail);

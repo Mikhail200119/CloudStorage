@@ -22,4 +22,12 @@ public static class FileContentTypes
 
         public const string Mp4 = $"{ContentTypeName}/mp4";
     }
+    
+    public static class Application
+    {
+        private const string ContentTypeName = "application";
+
+        public const string Pdf = $"{ContentTypeName}/pdf";
+        public const string MsWord = $"{ContentTypeName}/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    }
 }

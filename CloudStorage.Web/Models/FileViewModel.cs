@@ -8,4 +8,5 @@ public class FileViewModel
     public int SizeInBytes { get; set; }
     public string ContentType { get; set; }
     public byte[] Thumbnail { get; set; }
+    public string Extension { get; set; }
 }

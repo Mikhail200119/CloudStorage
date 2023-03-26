@@ -1,25 +1,32 @@
 ﻿function handleFileDoubleClick(fileSrc, contentType) {
     const overlayElement = document.getElementById("myOverlay");
     overlayElement.style.display = "block";
+
+    if(contentType === "application/octet-stream") {
+        contentType = "text/plain";
+    }
     
     let file = null;
 
-    if (contentType === "image/png") {
+    if (isImage(contentType)) {
         file = document.createElement("img");
-    } else if (contentType === "video/mp4") {
+        file.setAttribute("src", `${fileSrc}`);
+    } else if (isVideo(contentType)) {
         file = document.createElement("video");
         file.setAttribute("class", "file-video-player");
         file.setAttribute("controls", "");
-    } else if (contentType === "text/plain") {
+        file.setAttribute("src", `${fileSrc}`);
+    } else if (isText(contentType)) {
         file = document.createElement("iframe");
+        file.setAttribute("type", `${contentType}`);
+        file.style = "height: 700px; width: 1000px; object-fit: contain; background-color: white;";
+        file.setAttribute("src", `${fileSrc}`);
     }
 
     if (file === null) {
+        closeFileOverlay();
         return;
     }
-
-    file.src = fileSrc;
-    file.setAttribute("src", `${fileSrc}`);
 
     const closeButton = document.createElement("button");
     closeButton.textContent = "X";
@@ -35,24 +42,12 @@
 
     overlayElement.appendChild(divElement);
     overlayElement.appendChild(closeButton);
-
-    /* alert("before onload subscription");
-     file.setAttribute("onload", "onMediaLoaded(this)");
-     alert("after onload subscription");*/
-
-    // alert("captureStream() call");
 }
 
 function closeFileOverlay() {
     const overlay = document.getElementById("myOverlay");
-    const videoElement = overlay.querySelector("div[id=overlayFile] video");
-    
-    if (videoElement !== null) {
-        videoElement.pause();
-        videoElement.removeAttribute("src");
-        videoElement.load();
-    }
-    
     overlay.style.display = "none";
     overlay.innerHTML = "";
+
+    document.getElementById("office-documents-viewer").style.display = "none";
 }

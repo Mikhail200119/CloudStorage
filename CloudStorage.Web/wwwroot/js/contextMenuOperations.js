@@ -33,8 +33,7 @@ function displayRenameInput(actionPath, fileId) {
     cancelButton.textContent = "Cancel";
     cancelButton.className = "cancel-button"
     cancelButton.addEventListener("click", event => {
-        overlay.style.display = "none";
-        overlay.innerHTML = "";
+        closeFileOverlay();
     });
     
     const container = document.createElement("div");
@@ -53,16 +52,10 @@ async function onFileDelete() {
     await fetch(`${actionPath}?id=${fileId}`, { method: 'DELETE' })
         .then(response => {
             if (response.ok) {
-                removeFileItemFromPage(fileId);
+                removeFileItemOnPage(fileId);
             }
         })
         .catch(() => console.log("An error during deleting file occured"));
-}
-
-function removeFileItemFromPage(fileId) {
-    const fileItemToDelete = getFileByIdFromPage(fileId)
-    
-    fileItemToDelete.remove();
 }
 
 function renameFileInPage(fileId, newName) {

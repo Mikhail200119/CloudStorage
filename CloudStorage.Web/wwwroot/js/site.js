@@ -43,3 +43,21 @@ function setupContextMenu() {
             .forEach(idDiv => idDiv.remove());
     });
 }
+
+function checkNumberOfFileItems() {
+    if(Array.from(document.querySelectorAll("div[id=fileDescription]")).length === 0){
+        document.getElementById("no-uploaded-files-info").style.display = "block";
+    }
+}
+
+function setFilesScopeHeight() {
+    const body = document.body,
+        html = document.documentElement;
+
+    const height = Math.max(body.scrollHeight, body.offsetHeight,
+        html.clientHeight, html.scrollHeight, html.offsetHeight);
+    
+    const newHeight = height * 40 / 100;
+
+    document.getElementById("files").style.height = `${newHeight}px`;
+}

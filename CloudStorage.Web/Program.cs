@@ -7,6 +7,8 @@ using CloudStorage.DAL;
 using CloudStorage.Web.Areas.Identity.Data;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.MappingProfiles;
+using CloudStorage.Web.Services;
+using CloudStorage.Web.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,8 +35,11 @@ builder.WebHost.ConfigureServices(services =>
         .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
         .AddTransient<IFileStorageService, FileStorageService>()
         .AddTransient<IAesEncryptor, AesEncryptor>()
+        .AddTransient<IWordToPdfConverter, WordToPdfConverter>()
         .AddDbContext<CloudStorageUnitOfWork>(optionsBuilder =>
             optionsBuilder.UseNpgsql(databaseConnectionString));
+
+    services.AddHttpClient<WordToPdfConverter>(nameof(WordToPdfConverter));
 
 
     var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();

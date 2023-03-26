@@ -5,6 +5,7 @@ using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CloudStorage.BLL.Services;
 
@@ -36,11 +37,12 @@ public class CloudStorageManager : ICloudStorageManager
             throw new FileNameDuplicationException("Some files have the same name.");
         }
 
-        var dbModelsToUpload = filesDbModels.Select(model =>
+        var finalDbModelsToUpload = filesDbModels.Select(model =>
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
             model.ContentHash = _dataHasher.HashStreamData(content);
             model.UploadedBy = _userService.Current.Email;
+            model.Extension = Path.GetExtension(filesArray.Single(file => file.Name == model.ProvidedName).Name)[1..];
 
             return model;
         }).ToArray();
@@ -49,51 +51,58 @@ public class CloudStorageManager : ICloudStorageManager
 
         foreach (var fileCreateData in filesArray)
         {
-            var uniqueName = dbModelsToUpload.Single(file => file.ProvidedName == fileCreateData.Name).UniqueName;
+            var uniqueName = finalDbModelsToUpload.Single(file => file.ProvidedName == fileCreateData.Name).UniqueName;
 
             namesWithContents.Add((uniqueName, fileCreateData.Content));
         }
 
         await _fileStorageService.UploadRangeAsync(namesWithContents);
-        
-        var dbModelsWithContent = dbModelsToUpload.Select(model =>
+
+        var dbModelsWithContent = finalDbModelsToUpload.Select(model =>
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
 
             return (model, content);
         }).ToArray();
 
-        await ValidateCreatedFile(dbModelsToUpload);
+        await ValidateCreatedFile(finalDbModelsToUpload);
         await SetFilesThumbnail(dbModelsWithContent);
 
         try
         {
-            await _cloudStorageUnitOfWork.FileDescription.CreateRangeAsync(dbModelsToUpload);
+            await _cloudStorageUnitOfWork.FileDescription.CreateRangeAsync(finalDbModelsToUpload);
             await _cloudStorageUnitOfWork.SaveChangesAsync();
         }
         catch
         {
-            var uniqueNames = dbModelsToUpload
+            var uniqueNames = finalDbModelsToUpload
                 .Select(file => file.UniqueName)
                 .ToArray();
-            
+
             await _fileStorageService.DeleteRangeAsync(uniqueNames);
 
             throw;
         }
 
-        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(dbModelsToUpload);
+        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(finalDbModelsToUpload);
 
         return fileDescriptions;
     }
 
-    public async Task<Stream> GetFileStreamAsync(int fileId)
+    public async Task<(Stream, string)> GetFileStreamAndContentTypeAsync(int fileId)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
 
+        if (item is null)
+        {
+            return await Task.FromResult<(Stream, string)>((Stream.Null, null)!);
+        }
+                
+        ValidateUserPermissions(item);
+
         var content = await _fileStorageService.GetStreamAsync(item.UniqueName);
 
-        return content;
+        return (content, item.ContentType);
     }
 
     public async Task<FileDescription> UpdateAsync(FileUpdateData existingFile)
@@ -111,6 +120,7 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task DeleteAsync(int id)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
+        ValidateUserPermissions(item);
 
         if (item is null)
         {
@@ -122,21 +132,60 @@ public class CloudStorageManager : ICloudStorageManager
         await _cloudStorageUnitOfWork.SaveChangesAsync();
 
         _fileStorageService.Delete(item.UniqueName);
-        _fileStorageService.Delete(item.ThumbnailInfo.UniqueName);
+
+        if (item.ThumbnailInfo is not null)
+        {
+            _fileStorageService.Delete(item.ThumbnailInfo.UniqueName);
+        }
+    }
+
+    public async Task DeleteRangeAsync(IEnumerable<int> ids)
+    {
+        var fileIds = ids.ToArray();
+        _cloudStorageUnitOfWork.FileDescription.DeleteRange(fileIds);
+        
+        var filesToDelete = _cloudStorageUnitOfWork.FileDescription
+            .GetAllFilesAsQueryable(_userService.Current.Email)
+            .AsNoTracking()
+            .Where(file => ids.Contains(file.Id))
+            .ToArray();
+
+        ValidateUserPermissions(filesToDelete);
+
+        await _fileStorageService.DeleteRangeAsync(filesToDelete.Select(file => file.UniqueName).ToArray());
+
+        var thumbs = filesToDelete
+            .Where(file => file.ThumbnailInfo is not null)
+            .Select(file => file.ThumbnailInfo!.UniqueName)
+            .ToArray();
+
+        await _fileStorageService.DeleteRangeAsync(thumbs);
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
         var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
+        ValidateUserPermissions(filesDbModel.ToArray());
 
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
         var allFilesAsync = files as FileDescription[] ?? files.ToArray();
-        foreach (var file in allFilesAsync)
+
+        var getThumbTasks = allFilesAsync.Select(file =>
         {
-            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo.UniqueName;
-            file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName);
-        }
+            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
+
+            if (thumbnailName is null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Task.Run(async () =>
+                file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName));
+        });
+
+        await Task.WhenAll(getThumbTasks);
 
         return allFilesAsync;
     }
@@ -155,7 +204,7 @@ public class CloudStorageManager : ICloudStorageManager
 
         if (contentHashesExist)
         {
-            throw new FileContentDuplicationException("A file with such content is already exist.");
+            throw new FileContentDuplicationException("A file with such content already exists.");
         }
 
         var fileNames = fileDbModel.Select(file => file.ProvidedName);
@@ -170,8 +219,10 @@ public class CloudStorageManager : ICloudStorageManager
 
     private async Task SetFilesThumbnail(params (FileDescriptionDbModel DbModel, Stream Content)[] filesInfo)
     {
-        foreach (var (dbModel, content) in filesInfo)
+        var createThumbTasks = filesInfo.Select(fileInfo =>
         {
+            var (dbModel, content) = fileInfo;
+            
             content.Seek(0, SeekOrigin.Begin);
 
             if (ContentTypeDeterminant.IsVideo(dbModel.ContentType) ||
@@ -182,9 +233,23 @@ public class CloudStorageManager : ICloudStorageManager
                 {
                     UniqueName = thumbName
                 };
-                
-                await _fileStorageService.CreateVideoThumbnailAsync(dbModel.UniqueName, thumbName);
+
+                return _fileStorageService.CreateVideoThumbnailAsync(dbModel.UniqueName, thumbName);
             }
+
+            return Task.CompletedTask;
+        });
+
+        await Task.WhenAll(createThumbTasks);
+    }
+
+    private void ValidateUserPermissions(params FileDescriptionDbModel[]? files)
+    {
+        var currentUser = _userService.Current.Email;
+
+        if (files?.Any(file => file.UploadedBy != currentUser) == true)
+        {
+            throw new UnauthorizedUserException("Current user does not have access to some files.");
         }
     }
 }

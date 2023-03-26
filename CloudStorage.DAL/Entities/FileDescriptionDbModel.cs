@@ -15,5 +15,6 @@ public class FileDescriptionDbModel : IEntity
     public DateTime CreatedDate { get; set; }
     public string ContentHash { get; set; }
     public string UploadedBy { get; set; }
-    public ThumbnailInfoDbModel ThumbnailInfo { get; set; }
+    public string? Extension { get; set; }
+    public ThumbnailInfoDbModel? ThumbnailInfo { get; set; }
 }

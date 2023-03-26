@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
-using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
+using CloudStorage.Web.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace CloudStorage.Web.Controllers;
 
@@ -17,13 +16,13 @@ public class FilesController : Controller
 
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
-    private readonly FileStorageOptions _storageOptions;
+    private readonly IWordToPdfConverter _wordToPdfConverter;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IOptions<FileStorageOptions> storageOptions)
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IWordToPdfConverter wordToPdfConverter)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
-        _storageOptions = storageOptions.Value;
+        _wordToPdfConverter = wordToPdfConverter;
     }
 
     [HttpGet]
@@ -66,19 +65,19 @@ public class FilesController : Controller
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete([FromQuery] IEnumerable<int> ids)
     {
-        await _cloudStorageManager.DeleteAsync(id);
+        await _cloudStorageManager.DeleteRangeAsync(ids);
 
         return Ok();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetFileContent(int id, string contentType)
+    [HttpGet("/Files/GetFileContent/{id:int}")]
+    public async Task<IActionResult> GetFileContent([FromRoute] int id)
     {
-        var content = await _cloudStorageManager.GetFileStreamAsync(id);
+        var (data, contentType) = await _cloudStorageManager.GetFileStreamAndContentTypeAsync(id);
 
-        return File(content, contentType, enableRangeProcessing: true);
+        return File(data, contentType);
     }
 
     [HttpPut]

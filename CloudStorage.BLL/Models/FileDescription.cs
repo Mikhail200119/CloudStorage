@@ -15,6 +15,6 @@ public class FileDescription
     public string ContentHash { get; set; }
 
     public int SizeInBytes { get; set; }
-
     public Stream Thumbnail { get; set; }
+    public string Extension { get; set; }
 }
