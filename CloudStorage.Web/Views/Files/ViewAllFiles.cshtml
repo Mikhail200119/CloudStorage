@@ -10,13 +10,13 @@
     };
 }
 
-<script src="js/displayFile.js?v18"></script>
+<script src="js/displayFile.js"></script>
 <script src="js/searchFiles.js"></script>
-<script src="js/sortFiles.js?v2"></script>
-<script src="js/contextMenuOperations.js?v9"></script>
-<script src="js/site.js?v6"></script>
-<script src="js/ContentTypesConstants.js?v3"></script>
-<script src="js/DeleteFiles.js?v6"></script>
+<script src="js/sortFiles.js"></script>
+<script src="js/contextMenuOperations.js"></script>
+<script src="js/site.js"></script>
+<script src="js/ContentTypesConstants.js"></script>
+<script src="js/DeleteFiles.js"></script>
 
 <div id="myOverlay"></div>
 
@@ -78,15 +78,26 @@
 
                                 if (file.Thumbnail.Length == 0)
                                 {
-                                    source = file.ContentType switch
+                                    if (FilesExtension.IsWord(file.Extension))
                                     {
-                                        FileContentTypes.Image.Png => "image icon.png",
-                                        FileContentTypes.Video.Mp4 => "video icon.jpg",
-                                        FileContentTypes.Text.Plain => "document icon.png",
-                                        FileContentTypes.Application.Pdf => "pdf-icon.png",
-                                        FileContentTypes.Application.MsWord => "word-icon.png",
-                                        _ => string.Empty
-                                        };
+                                        source = "word-icon.png";
+                                    }
+                                    else if (FilesExtension.IsCode(file.Extension))
+                                    {
+                                        source = "code-icon.png";
+                                    }
+                                    else if (file.Extension == FilesExtension.Text.Pdf)
+                                    {
+                                        source = "pdf-icon.png";
+                                    }
+                                    else if (FilesExtension.IsArchive(file.Extension))
+                                    {
+                                        source = "archive-icon.png";
+                                    }
+                                    else
+                                    {
+                                        source = "document-icon.png";
+                                    }
                                 }
                                 else
                                 {
@@ -102,9 +113,6 @@
                         <div id="fileName" class="fileName">@file.ProvidedName</div>
                         <div id="fileSize" class="visually-hidden">@file.SizeInBytes</div>
                         <div id="fileCreatedDate" class="visually-hidden">@file.CreatedDate.ToString("R")</div>
-                        @*<form data-ajax="true" data-ajax-method="post" asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id" method="post">
-                                <button class="deleteButton" type="submit">Delete</button>
-                            </form>*@
                     </div>
                 </div>
             </div>

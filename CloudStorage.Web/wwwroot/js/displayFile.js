@@ -2,6 +2,10 @@
     const overlayElement = document.getElementById("myOverlay");
     overlayElement.style.display = "block";
 
+    if(contentType === "application/octet-stream") {
+        contentType = "text/plain";
+    }
+    
     let file = null;
 
     if (isImage(contentType)) {
@@ -13,14 +17,10 @@
         file.setAttribute("controls", "");
         file.setAttribute("src", `${fileSrc}`);
     } else if (isText(contentType)) {
-        //file = document.createElement("iframe");
-        //file.setAttribute("type", contentType);
-        //file.style = "height: 700px; width: 1000px; object-fit: contain;";
-        //file.setAttribute("src", `${fileSrc}`);
-        const src = `https://view.officeapps.live.com/op/embed.aspx?src=http://remote.url.tld${fileSrc}`;
-        file = document.getElementById("office-documents-viewer");
-        file.style.display = "block";
-        file.setAttribute("src", `${src}`);
+        file = document.createElement("iframe");
+        file.setAttribute("type", `${contentType}`);
+        file.style = "height: 700px; width: 1000px; object-fit: contain; background-color: white;";
+        file.setAttribute("src", `${fileSrc}`);
     }
 
     if (file === null) {
