@@ -37,11 +37,12 @@ public class CloudStorageManager : ICloudStorageManager
             throw new FileNameDuplicationException("Some files have the same name.");
         }
 
-        var dbModelsToUpload = filesDbModels.Select(model =>
+        var finalDbModelsToUpload = filesDbModels.Select(model =>
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
             model.ContentHash = _dataHasher.HashStreamData(content);
             model.UploadedBy = _userService.Current.Email;
+            model.Extension = Path.GetExtension(filesArray.Single(file => file.Name == model.ProvidedName).Name)[1..];
 
             return model;
         }).ToArray();
@@ -50,31 +51,31 @@ public class CloudStorageManager : ICloudStorageManager
 
         foreach (var fileCreateData in filesArray)
         {
-            var uniqueName = dbModelsToUpload.Single(file => file.ProvidedName == fileCreateData.Name).UniqueName;
+            var uniqueName = finalDbModelsToUpload.Single(file => file.ProvidedName == fileCreateData.Name).UniqueName;
 
             namesWithContents.Add((uniqueName, fileCreateData.Content));
         }
 
         await _fileStorageService.UploadRangeAsync(namesWithContents);
 
-        var dbModelsWithContent = dbModelsToUpload.Select(model =>
+        var dbModelsWithContent = finalDbModelsToUpload.Select(model =>
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
 
             return (model, content);
         }).ToArray();
 
-        await ValidateCreatedFile(dbModelsToUpload);
+        await ValidateCreatedFile(finalDbModelsToUpload);
         await SetFilesThumbnail(dbModelsWithContent);
 
         try
         {
-            await _cloudStorageUnitOfWork.FileDescription.CreateRangeAsync(dbModelsToUpload);
+            await _cloudStorageUnitOfWork.FileDescription.CreateRangeAsync(finalDbModelsToUpload);
             await _cloudStorageUnitOfWork.SaveChangesAsync();
         }
         catch
         {
-            var uniqueNames = dbModelsToUpload
+            var uniqueNames = finalDbModelsToUpload
                 .Select(file => file.UniqueName)
                 .ToArray();
 
@@ -83,19 +84,25 @@ public class CloudStorageManager : ICloudStorageManager
             throw;
         }
 
-        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(dbModelsToUpload);
+        var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(finalDbModelsToUpload);
 
         return fileDescriptions;
     }
 
-    public async Task<Stream> GetFileStreamAsync(int fileId)
+    public async Task<(Stream, string)> GetFileStreamAndContentTypeAsync(int fileId)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+
+        if (item is null)
+        {
+            return await Task.FromResult<(Stream, string)>((Stream.Null, null)!);
+        }
+                
         ValidateUserPermissions(item);
 
         var content = await _fileStorageService.GetStreamAsync(item.UniqueName);
 
-        return content;
+        return (content, item.ContentType);
     }
 
     public async Task<FileDescription> UpdateAsync(FileUpdateData existingFile)
@@ -179,18 +186,6 @@ public class CloudStorageManager : ICloudStorageManager
         });
 
         await Task.WhenAll(getThumbTasks);
-        
-        /*foreach (var file in allFilesAsync)
-        {
-            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
-
-            if (thumbnailName is null)
-            {
-                continue;
-            }
-
-            file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName);
-        }*/
 
         return allFilesAsync;
     }
@@ -224,8 +219,10 @@ public class CloudStorageManager : ICloudStorageManager
 
     private async Task SetFilesThumbnail(params (FileDescriptionDbModel DbModel, Stream Content)[] filesInfo)
     {
-        foreach (var (dbModel, content) in filesInfo)
+        var createThumbTasks = filesInfo.Select(fileInfo =>
         {
+            var (dbModel, content) = fileInfo;
+            
             content.Seek(0, SeekOrigin.Begin);
 
             if (ContentTypeDeterminant.IsVideo(dbModel.ContentType) ||
@@ -237,9 +234,13 @@ public class CloudStorageManager : ICloudStorageManager
                     UniqueName = thumbName
                 };
 
-                await _fileStorageService.CreateVideoThumbnailAsync(dbModel.UniqueName, thumbName);
+                return _fileStorageService.CreateVideoThumbnailAsync(dbModel.UniqueName, thumbName);
             }
-        }
+
+            return Task.CompletedTask;
+        });
+
+        await Task.WhenAll(createThumbTasks);
     }
 
     private void ValidateUserPermissions(params FileDescriptionDbModel[]? files)

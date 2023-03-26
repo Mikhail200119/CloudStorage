@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="ConvertApi" Version="3.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.9" />
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
     <PackageReference Include="Xabe.FFmpeg" Version="5.2.0" />
+    <PackageReference Include="ILove_PDF" Version="1.4.0" />
     <PackageReference Include="tusdotnet" Version="2.7.0" />
   </ItemGroup>
 
@@ -42,7 +44,6 @@
     <Folder Include="Migrations" />
     <Folder Include="Migrations\" />
     <Folder Include="wwwroot\Files" />
-    <Folder Include="wwwroot\Thumbnails" />
   </ItemGroup>
 
   <ItemGroup>

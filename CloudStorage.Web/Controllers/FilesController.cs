@@ -3,6 +3,7 @@ using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.Web.Filters;
 using CloudStorage.Web.Models;
+using CloudStorage.Web.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,11 +16,13 @@ public class FilesController : Controller
 
     private readonly ICloudStorageManager _cloudStorageManager;
     private readonly IMapper _mapper;
+    private readonly IWordToPdfConverter _wordToPdfConverter;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper)
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IWordToPdfConverter wordToPdfConverter)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
+        _wordToPdfConverter = wordToPdfConverter;
     }
 
     [HttpGet]
@@ -72,9 +75,9 @@ public class FilesController : Controller
     [HttpGet("/Files/GetFileContent/{id:int}")]
     public async Task<IActionResult> GetFileContent([FromRoute] int id)
     {
-        var content = await _cloudStorageManager.GetFileStreamAsync(id);
+        var (data, contentType) = await _cloudStorageManager.GetFileStreamAndContentTypeAsync(id);
 
-        return File(content, "application/octet-stream");
+        return File(data, contentType);
     }
 
     [HttpPut]
