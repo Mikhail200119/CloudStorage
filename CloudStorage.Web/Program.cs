@@ -41,7 +41,6 @@ builder.WebHost.ConfigureServices(services =>
 
     services.AddHttpClient<WordToPdfConverter>(nameof(WordToPdfConverter));
 
-
     var fileStorageOptions = builder.Configuration.GetSection(nameof(FileStorageOptions)).Get<FileStorageOptions>();
 
     var aes = Aes.Create();

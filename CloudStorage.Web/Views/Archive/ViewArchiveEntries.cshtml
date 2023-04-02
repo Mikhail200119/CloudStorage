@@ -1,0 +1,27 @@
+﻿@model (int archiveId, IEnumerable<FileViewModel> entries)
+
+<div id="archive-entries" style="display:flex; justify-content: center; align-items: center;">
+    <ul>
+        @foreach (var entry in Model.entries)
+        {
+            <li>
+                <div id="entry-name" style="display: none;">@entry.ProvidedName</div>
+                @entry.ProvidedName
+            </li>
+        }
+    </ul>
+</div>
+
+<script>
+    async function onEntryDoubleClick(element) {
+        const providedName = element.querySelector("div[id=entry-name]").textContent;
+        const url = `/Archive/GetEntryContent/${@Model.archiveId}?name=${providedName}`;
+        
+        await fetch(url, { method: "GET" })
+            .catch(() => handleGetEntryError());
+    }
+    
+    function handleGetEntryError() {
+        console.log("error at get entry");
+    }
+</script>
