@@ -9,4 +9,9 @@ public class ThumbnailInfoRepository : EfRepository<ThumbnailInfoDbModel>, IThum
     public ThumbnailInfoRepository(DbContext context) : base(context)
     {
     }
+
+    public async Task<ThumbnailInfoDbModel?> GetByIdAsync(int id)
+    {
+        return await Table.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
+    }
 }

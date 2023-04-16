@@ -4,6 +4,7 @@ namespace CloudStorage.DAL;
 
 public interface ICloudStorageUnitOfWork
 {
+    IUsersRepository Users { get; }
     IFileDescriptionRepository FileDescription { get; }
     IThumbnailInfoRepository ThumbnailInfo { get; }
 

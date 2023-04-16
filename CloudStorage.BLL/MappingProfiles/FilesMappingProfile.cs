@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using CloudStorage.BLL.Models;
 using CloudStorage.DAL.Entities;
-using FileCreateData = CloudStorage.BLL.Models.FileCreateData;
-using FileUpdateData = CloudStorage.BLL.Models.FileUpdateData;
 
 namespace CloudStorage.BLL.MappingProfiles;
 
@@ -21,6 +19,8 @@ public class FilesMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Content.Length));
 
         CreateMap<FileUpdateData, FileDescriptionDbModel>();
-        CreateMap<FileDescriptionDbModel, FileDescription>();
+        CreateMap<FileDescriptionDbModel, FileDescription>()
+            .ForMember(dest => dest.ThumbnailId,
+                opt => opt.MapFrom(src => src.ThumbnailInfo!.Id));
     }
 }

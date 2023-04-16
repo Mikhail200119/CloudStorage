@@ -2,6 +2,6 @@
 
 public class ThumbnailInfo
 {
-    public int ThumbnailId { get; set; }
+    public int Id { get; set; }
     public string UniqueName { get; set; }
 }
