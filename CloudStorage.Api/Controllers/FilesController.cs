@@ -1,11 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Text;
+using AutoMapper;
 using CloudStorage.Api.Dtos.Request;
 using CloudStorage.Api.Dtos.Response;
 using CloudStorage.Api.Filters;
+using CloudStorage.Api.Services;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace CloudStorage.Api.Controllers;
 
@@ -15,14 +18,18 @@ namespace CloudStorage.Api.Controllers;
 public class FilesController : ControllerBase
 {
     private const long MaxFileSize = 10_000_000_000;
-    
-    private readonly ICloudStorageManager _cloudStorageManager;
-    private readonly IMapper _mapper;
 
-    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper)
+    private readonly ICloudStorageManager _cloudStorageManager;
+    private readonly IDisplayContentTypeMapper _contentTypeMapper;
+    private readonly IMapper _mapper;
+    private readonly IWordToPdfConverter _wordToPdfConverter;
+
+    public FilesController(ICloudStorageManager cloudStorageManager, IMapper mapper, IDisplayContentTypeMapper contentTypeMapper, IWordToPdfConverter wordToPdfConverter)
     {
         _cloudStorageManager = cloudStorageManager;
         _mapper = mapper;
+        _contentTypeMapper = contentTypeMapper;
+        _wordToPdfConverter = wordToPdfConverter;
     }
 
     [EnableCors("_myAllowSpecificOrigins")]
@@ -76,7 +83,7 @@ public class FilesController : ControllerBase
     public async Task<ActionResult<IEnumerable<string>>> GetArchiveFileNames(int fileId)
     {
         var names = await _cloudStorageManager.GetArchiveFileNamesAsync(fileId);
-
+        
         return Ok(names);
     }
 
@@ -84,19 +91,74 @@ public class FilesController : ControllerBase
     public async Task<ActionResult<Stream>> UnzipArchiveFile(int fileId, string archiveFilePath)
     {
         var decodedPath = archiveFilePath.Replace("%2F", "/");
-        
-        var (contentType, data) = await _cloudStorageManager.GetArchiveFileContent(fileId, decodedPath);
 
-        return new FileStreamResult(data, contentType);
+        var (_, contentType, data) = await _cloudStorageManager.GetArchiveFileContent(fileId, decodedPath);
+
+        return new FileStreamResult(data, $"{contentType}; charset=utf-8");
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Stream>> GetFileContent([FromRoute] int id)
     {
-        var (stream, contentType) = await _cloudStorageManager.GetFileStreamAndContentTypeAsync(id);
-        return new FileStreamResult(stream, contentType);
+        var fileDescription = await _cloudStorageManager.GetFileDescriptionByIdAsync(id);
+
+        //var (stream, contentType, downloadName) = await _cloudStorageManager.GetFileStreamAsync(id);
+
+        var extensions = new FileExtensionContentTypeProvider().Mappings
+            .Where(m => m.Value == fileDescription.ContentType)
+            .Select(m => m.Key);
+
+        Stream stream;
+        string contentType;
+        
+        if (extensions.Contains(".doc") || extensions.Contains(".docx"))
+        {
+            stream = await _wordToPdfConverter.GetPdfFromWordAsync(id);
+            contentType = "application/pdf";
+        }
+        else
+        {
+            var (data, type, _) = await _cloudStorageManager.GetFileStreamAsync(id);
+            stream = data;
+            contentType = type;
+        }
+
+        var base64FileName = Convert.ToBase64String(Encoding.UTF8.GetBytes(fileDescription.ProvidedName));
+        Response.Headers.ContentDisposition = $"inline; filename={base64FileName}";
+        
+        return new FileStreamResult(stream, $"{contentType}; charset=utf-8");
     }
 
+    [HttpGet("download/{fileId:int}")]
+    public async Task<ActionResult<Stream?>> DownloadFile(int fileId)
+    {
+        var (data, contentType, downloadName) = await _cloudStorageManager.GetFileStreamAsync(fileId);
+
+        return File(data, contentType, downloadName);
+    }
+
+    [HttpGet("download/archive-file/{fileId:int}/{archiveFilePath}")]
+    public async Task<ActionResult<Stream?>> DownloadArchiveFile(int fileId, string archiveFilePath)
+    {
+        var decodedPath = archiveFilePath.Replace("%2F", "/");
+
+        var (name, contentType, data) = await _cloudStorageManager.GetArchiveFileContent(fileId, decodedPath);
+
+        return File(data, contentType, name);
+    }
+
+    [HttpPost("archive/upload-file/{archiveId:int}/{archiveFilePath}")]
+    public async Task<ActionResult<FileGetResponse>> UploadArchiveFile(int archiveId, string archiveFilePath)
+    {
+        var decodedPath = archiveFilePath.Replace("%2F", "/");
+        var fileDescription = await _cloudStorageManager.LoadFileFromZip(archiveId, decodedPath);
+
+        var response = _mapper.Map<FileGetResponse>(fileDescription);
+        SetContentUrl(new List<FileGetResponse> { response });
+
+        return Ok(response);
+    }
+    
     private void SetContentUrl(IEnumerable<FileGetResponse> fileGetResponses)
     {
         foreach (var file in fileGetResponses)

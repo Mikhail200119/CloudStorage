@@ -1,4 +1,5 @@
-﻿using CloudStorage.BLL.Options;
+﻿using System.IO.Compression;
+using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Xabe.FFmpeg;
@@ -34,7 +35,12 @@ public class FileStorageService : IFileStorageService
             return Task.Run(async () =>
             {
                 await using var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                content.Seek(0, SeekOrigin.Begin);
+
+                if (content.CanSeek)
+                {
+                    content.Seek(0, SeekOrigin.Begin);
+                }
+                
                 await content.CopyToAsync(fileStream);
             });
         });
@@ -85,7 +91,7 @@ public class FileStorageService : IFileStorageService
             Access = FileAccess.Read,
             Share = FileShare.Delete | FileShare.Read
         });
-
+        
         return await Task.FromResult(file);
     }
 
@@ -106,5 +112,16 @@ public class FileStorageService : IFileStorageService
         var finalOutputPath = Path.Combine(_storageOptions.FilesDirectoryPath, thumbName);
         await using var finalThumbnail = File.Create(finalOutputPath);
         await compressedImage.CopyToAsync(finalThumbnail);
+    }
+
+    public async Task<(Stream data, string entryName)> ExtractZipEntry(string zipFileName, string newFileName, string extractedFileName)
+    {
+        await using var archive = await GetStreamAsync(zipFileName);
+        var zipArchive = new ZipArchive(archive);
+        var entry = zipArchive.Entries.SingleOrDefault(e => e.FullName == extractedFileName);
+        var filePath = Path.Combine(_storageOptions.FilesDirectoryPath, newFileName);
+        entry?.ExtractToFile(filePath);
+
+        return (await GetStreamAsync(newFileName), entry?.Name)!;
     }
 }

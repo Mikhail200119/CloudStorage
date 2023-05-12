@@ -17,7 +17,5 @@ public class FileDescriptionDbModel : IEntity
     public string UploadedBy { get; set; }
     public string? Extension { get; set; }
 
-    public int? ArchiveId { get; set; }
-    public FileArchiveDbModel? Archive { get; set; }
     public ThumbnailInfoDbModel? ThumbnailInfo { get; set; }
 }

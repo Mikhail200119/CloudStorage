@@ -1,14 +1,18 @@
 using System.IO.Compression;
 using System.Net;
+using System.Text;
 using AutoMapper;
 using CloudStorage.BLL.Exceptions;
 using CloudStorage.BLL.Helpers;
 using CloudStorage.BLL.Models;
+using CloudStorage.BLL.Options;
 using CloudStorage.BLL.Services.Interfaces;
 using CloudStorage.DAL;
 using CloudStorage.DAL.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CloudStorage.BLL.Services;
 
@@ -19,14 +23,16 @@ public class CloudStorageManager : ICloudStorageManager
     private readonly IMapper _mapper;
     private readonly IFileStorageService _fileStorageService;
     private readonly IDataHasher _dataHasher;
+    private readonly ArchiveOptions _archiveOptions;
 
-    public CloudStorageManager(ICloudStorageUnitOfWork cloudStorageUnitOfWork, IMapper mapper, IUserService userService, IFileStorageService fileStorageService, IDataHasher dataHasher)
+    public CloudStorageManager(ICloudStorageUnitOfWork cloudStorageUnitOfWork, IMapper mapper, IUserService userService, IFileStorageService fileStorageService, IDataHasher dataHasher, IOptions<ArchiveOptions> archiveOptions)
     {
         _cloudStorageUnitOfWork = cloudStorageUnitOfWork;
         _mapper = mapper;
         _userService = userService;
         _fileStorageService = fileStorageService;
         _dataHasher = dataHasher;
+        _archiveOptions = archiveOptions.Value;
     }
 
     public async Task<IEnumerable<FileDescription>> CreateAsync(IEnumerable<FileCreateData> files)
@@ -88,24 +94,26 @@ public class CloudStorageManager : ICloudStorageManager
         }
 
         var fileDescriptions = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(finalDbModelsToUpload);
-
+        
         return fileDescriptions;
     }
 
-    public async Task<(Stream, string)> GetFileStreamAndContentTypeAsync(int fileId)
+    public async Task<(Stream Data, string ContentType, string DownloadName)> GetFileStreamAsync(int fileId)
     {
         var item = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
 
         if (item is null)
         {
-            return await Task.FromResult<(Stream, string)>((Stream.Null, null)!);
+            return await Task.FromResult<(Stream, string, string)>((Stream.Null, string.Empty, string.Empty)!);
         }
                 
         //ValidateUserPermissions(item);
 
-        var content = await _fileStorageService.GetStreamAsync(item.UniqueName);
+        var content = await _fileStorageService.GetStreamAsync(item.UniqueName) as FileStream;
 
-        return (content, item.ContentType);
+        var downloadName = $"{Path.GetFileNameWithoutExtension(item.ProvidedName)}.{item.Extension}";
+
+        return (content, item.ContentType, downloadName)!;
     }
 
     public async Task<(Stream Data, string ContentType)> GetThumbnailStreamAndContentTypeAsync(int thumbId)
@@ -207,6 +215,13 @@ public class CloudStorageManager : ICloudStorageManager
         return allFilesAsync;
     }
 
+    public async Task<FileDescription?> GetFileDescriptionByIdAsync(int id)
+    {
+        var fileDbModel = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(id);
+
+        return _mapper.Map<FileDescription>(fileDbModel);
+    }
+
     public async Task<IEnumerable<FileDescription>> SearchFilesAsync(FileSearchData fileSearchData)
     {
         var allFilesAsQueryable = _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsQueryable("Test");
@@ -223,11 +238,11 @@ public class CloudStorageManager : ICloudStorageManager
         else
         {
             searchedFiles = allFilesAsQueryable
-                .Where(file => !string.IsNullOrEmpty(fileSearchData.Name) && fileSearchData.Name == file.ProvidedName)
-                .Where(file => !string.IsNullOrEmpty(fileSearchData.Extension) && fileSearchData.Extension == file.Extension)
-                .Where(file => file.SizeInBytes == fileSearchData.SizeInBytes)
-                .Where(file => file.CreatedDate == fileSearchData.CreationDate);
-        }
+                .Where(file => string.IsNullOrEmpty(fileSearchData.Name) || file.ProvidedName.ToLower().Contains(fileSearchData.Name.ToLower()))
+                .Where(file => string.IsNullOrEmpty(fileSearchData.Extension) || fileSearchData.Extension == file.Extension)
+                .Where(file => fileSearchData.SizeInBytes == null || file.SizeInBytes == fileSearchData.SizeInBytes)
+                .Where(file => fileSearchData.CreationDate == null || file.CreatedDate == fileSearchData.CreationDate);
+        }   
 
         var fileDescription = _mapper.Map<IEnumerable<FileDescription>>(await searchedFiles.ToListAsync());
 
@@ -250,33 +265,75 @@ public class CloudStorageManager : ICloudStorageManager
         
         var stream = await _fileStorageService.GetStreamAsync(archive.UniqueName);
 
-        using var zipArchive = new ZipArchive(stream);
+        ZipArchive zipArchive = null;
+        
+        try
+        {
+            zipArchive = new ZipArchive(stream, ZipArchiveMode.Read, false, Encoding.GetEncoding(_archiveOptions.EntryNameEncoding));
+        }
+        catch (Exception ex)
+        {
+            var message = ex.Message;
+        } 
+        
+        //var names = zipArchive.Entries.Select(n=>new Encoding)
 
-        return zipArchive.Entries.Select(entry => entry.FullName);
+        return zipArchive.Entries.Select(entry => entry.FullName).Where(name => name[^1] != '/');
     }
 
-    public async Task<(string? contentType, Stream? data)> GetArchiveFileContent(int fileId, string archiveFilePath)
+    public async Task<(string? name, string? contentType, Stream? data)> GetArchiveFileContent(int fileId, string archiveFilePath)
     {
         var archive = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
 
         if (archive is null)
         {
-            return (string.Empty, Stream.Null);
+            return (string.Empty, string.Empty, Stream.Null);
         }
         
-        if (archive.Extension != "zip")
+        if (archive.Extension != "zip" && archive.Extension != "rar")
         {
             throw new BadHttpRequestException("Represented file is not an archive.", (int)HttpStatusCode.BadRequest);
         }
         
         var stream = await _fileStorageService.GetStreamAsync(archive.UniqueName);
-        var zipArchive = new ZipArchive(stream);
 
-        var entry = zipArchive.Entries.SingleOrDefault(entry => entry.FullName == archiveFilePath);
+        var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read, false, Encoding.GetEncoding("cp866"));
 
-        var contentType = ExtensionToContentTypeMapper.MapExtensionToContentType(Path.GetExtension(archiveFilePath)[1..]);
+        var entry = zipArchive.Entries.SingleOrDefault(entry => entry.Name == archiveFilePath);
+
+        //var contentType = ExtensionToContentTypeMapper.MapExtensionToContentType(Path.GetExtension(archiveFilePath)[1..]);
+        var contentType = new FileExtensionContentTypeProvider().TryGetContentType(archiveFilePath, out var type) ? type : "image/png";
         
-        return (contentType, entry.Open());
+        return (entry.Name, contentType, entry.Open());
+    }
+
+    public async Task<FileDescription> LoadFileFromZip(int zipFileId, string archiveFileName)
+    {
+        var archiveDbModel = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(zipFileId);
+        var uniqueName = Guid.NewGuid().ToString();
+        var (data, entryName) = await _fileStorageService.ExtractZipEntry(archiveDbModel.UniqueName, uniqueName, archiveFileName);
+
+        var contentType = new FileExtensionContentTypeProvider()
+            .TryGetContentType(archiveFileName, out var type) ? type : "text/plain";
+        
+        var fileCreateData = new FileCreateData
+        {
+            Content = data,
+            Name = entryName,
+            ContentType = contentType
+        };
+
+        var newFileDbModel = _mapper.Map<FileDescriptionDbModel>(fileCreateData);
+        newFileDbModel.UniqueName = uniqueName;
+        newFileDbModel.ContentHash = _dataHasher.HashStreamData(data);
+        newFileDbModel.Extension = Path.GetExtension(archiveFileName)[1..];
+        newFileDbModel.UploadedBy = "Test";
+        await _cloudStorageUnitOfWork.FileDescription.CreateAsync(newFileDbModel);
+        await _cloudStorageUnitOfWork.SaveChangesAsync();
+        
+        var fileDescription = _mapper.Map<FileDescription>(newFileDbModel);
+
+        return fileDescription;
     }
 
     public async Task RenameFileAsync(int id, string newName)
@@ -311,8 +368,11 @@ public class CloudStorageManager : ICloudStorageManager
         var createThumbTasks = filesInfo.Select(fileInfo =>
         {
             var (dbModel, content) = fileInfo;
-            
-            content.Seek(0, SeekOrigin.Begin);
+
+            if (content.CanSeek)
+            {
+                content.Seek(0, SeekOrigin.Begin);
+            }
 
             if (ContentTypeDeterminant.IsVideo(dbModel.ContentType) ||
                 ContentTypeDeterminant.IsImage(dbModel.ContentType))

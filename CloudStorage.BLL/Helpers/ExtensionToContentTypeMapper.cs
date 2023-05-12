@@ -9,9 +9,10 @@ public class ExtensionToContentTypeMapper
         { "jpg", "image/jpg" },
         { "png", "image/png" },
         { "mp4", "video/mp4" },
-        { "pdf", "application/pdf" }
+        { "pdf", "application/pdf" },
+        { "txt", "text/plain" }
     };
 
-    public static string MapExtensionToContentType(string extension) => 
-        !ContentTypes.ContainsKey(extension) ? ApplicationOctetSteam : ContentTypes[extension];
+    public static string MapExtensionToContentType(string extension) =>
+        !ContentTypes.ContainsKey(extension) ? "text/html" : ContentTypes[extension];
 }
