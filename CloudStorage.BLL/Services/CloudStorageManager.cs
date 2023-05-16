@@ -50,7 +50,7 @@ public class CloudStorageManager : ICloudStorageManager
         {
             var content = filesArray.Single(file => file.Name == model.ProvidedName).Content;
             model.ContentHash = _dataHasher.HashStreamData(content);
-            model.UploadedBy = "Test";//_userService.Current.Email;
+            model.UploadedBy = _userService.Current.Email;
             model.Extension = Path.GetExtension(filesArray.Single(file => file.Name == model.ProvidedName).Name)[1..];
 
             return model;
@@ -74,7 +74,7 @@ public class CloudStorageManager : ICloudStorageManager
             return (model, content);
         }).ToArray();
 
-        //await ValidateCreatedFile(finalDbModelsToUpload);
+        await ValidateCreatedFile(finalDbModelsToUpload);
         await SetFilesThumbnail(dbModelsWithContent);
 
         try
@@ -107,7 +107,7 @@ public class CloudStorageManager : ICloudStorageManager
             return await Task.FromResult<(Stream, string, string)>((Stream.Null, string.Empty, string.Empty)!);
         }
                 
-        //ValidateUserPermissions(item);
+        ValidateUserPermissions(item);
 
         var content = await _fileStorageService.GetStreamAsync(item.UniqueName) as FileStream;
 
@@ -170,12 +170,12 @@ public class CloudStorageManager : ICloudStorageManager
         _cloudStorageUnitOfWork.FileDescription.DeleteRange(fileIds);
         
         var filesToDelete = _cloudStorageUnitOfWork.FileDescription
-            .GetAllFilesAsQueryable("Test")
+            .GetAllFilesAsQueryable(_userService.Current.Email)
             .AsNoTracking()
             .Where(file => ids.Contains(file.Id))
             .ToArray();
 
-        //ValidateUserPermissions(filesToDelete);
+        ValidateUserPermissions(filesToDelete);
 
         await _fileStorageService.DeleteRangeAsync(filesToDelete.Select(file => file.UniqueName).ToArray());
 
@@ -190,27 +190,12 @@ public class CloudStorageManager : ICloudStorageManager
 
     public async Task<IEnumerable<FileDescription>> GetAllFilesAsync()
     {
-        var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync("Test");
-        //ValidateUserPermissions(filesDbModel.ToArray());
+        var filesDbModel = await _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsync(_userService.Current.Email);
+        ValidateUserPermissions(filesDbModel.ToArray());
 
         var files = _mapper.Map<IEnumerable<FileDescriptionDbModel>, IEnumerable<FileDescription>>(filesDbModel);
 
         var allFilesAsync = files as FileDescription[] ?? files.ToArray();
-
-        /*var getThumbTasks = allFilesAsync.Select(file =>
-        {
-            var thumbnailName = filesDbModel.Single(dbModel => dbModel.Id == file.Id).ThumbnailInfo?.UniqueName;
-
-            if (thumbnailName is null)
-            {
-                return Task.CompletedTask;
-            }
-
-            return Task.Run(async () =>
-                file.Thumbnail = await _fileStorageService.GetStreamAsync(thumbnailName));
-        });*/
-
-        //await Task.WhenAll(getThumbTasks);
 
         return allFilesAsync;
     }
@@ -224,7 +209,7 @@ public class CloudStorageManager : ICloudStorageManager
 
     public async Task<IEnumerable<FileDescription>> SearchFilesAsync(FileSearchData fileSearchData)
     {
-        var allFilesAsQueryable = _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsQueryable("Test");
+        var allFilesAsQueryable = _cloudStorageUnitOfWork.FileDescription.GetAllFilesAsQueryable(_userService.Current.Email);
 
         IQueryable<FileDescriptionDbModel> searchedFiles;
         
@@ -252,6 +237,8 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task<IEnumerable<string>> GetArchiveFileNamesAsync(int fileId)
     {
         var archive = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
+
+        ValidateUserPermissions(archive);
 
         if (archive is null)
         {
@@ -285,6 +272,8 @@ public class CloudStorageManager : ICloudStorageManager
     {
         var archive = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(fileId);
 
+        ValidateUserPermissions(archive);
+
         if (archive is null)
         {
             return (string.Empty, string.Empty, Stream.Null);
@@ -301,7 +290,6 @@ public class CloudStorageManager : ICloudStorageManager
 
         var entry = zipArchive.Entries.SingleOrDefault(entry => entry.Name == archiveFilePath);
 
-        //var contentType = ExtensionToContentTypeMapper.MapExtensionToContentType(Path.GetExtension(archiveFilePath)[1..]);
         var contentType = new FileExtensionContentTypeProvider().TryGetContentType(archiveFilePath, out var type) ? type : "image/png";
         
         return (entry.Name, contentType, entry.Open());
@@ -310,6 +298,9 @@ public class CloudStorageManager : ICloudStorageManager
     public async Task<FileDescription> LoadFileFromZip(int zipFileId, string archiveFileName)
     {
         var archiveDbModel = await _cloudStorageUnitOfWork.FileDescription.GetByIdAsync(zipFileId);
+
+        ValidateUserPermissions(archiveDbModel);
+        
         var uniqueName = Guid.NewGuid().ToString();
         var (data, entryName) = await _fileStorageService.ExtractZipEntry(archiveDbModel.UniqueName, uniqueName, archiveFileName);
 
@@ -327,7 +318,7 @@ public class CloudStorageManager : ICloudStorageManager
         newFileDbModel.UniqueName = uniqueName;
         newFileDbModel.ContentHash = _dataHasher.HashStreamData(data);
         newFileDbModel.Extension = Path.GetExtension(archiveFileName)[1..];
-        newFileDbModel.UploadedBy = "Test";
+        newFileDbModel.UploadedBy = _userService.Current.Email;
         await _cloudStorageUnitOfWork.FileDescription.CreateAsync(newFileDbModel);
         await _cloudStorageUnitOfWork.SaveChangesAsync();
         

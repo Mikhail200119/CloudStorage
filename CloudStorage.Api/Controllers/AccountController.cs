@@ -2,12 +2,15 @@
 using CloudStorage.Api.Dtos.Request;
 using CloudStorage.Api.Dtos.Response;
 using CloudStorage.BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudStorage.Api.Controllers;
 
 [ApiController]
-[Route("api/account")]
+[Route("api/account/")]
+[AllowAnonymous]
 public class AccountController : ControllerBase
 {
     private readonly IJwtTokenProvider _jwtTokenProvider;
@@ -38,8 +41,9 @@ public class AccountController : ControllerBase
         });
     }
 
+    [EnableCors("_myAllowSpecificOrigins")]
     [HttpPost("register")]
-    public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest registerRequest)
+    public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest registerRequest)
     {
         await _usersManager.Register(registerRequest.Email, registerRequest.Password);
 

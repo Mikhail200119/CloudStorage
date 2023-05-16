@@ -39,6 +39,23 @@ public class WordToPdfConverter : IWordToPdfConverter
             new ConvertApiFileParam(data, fileDescription.ProvidedName)
         );
 
+        await data.DisposeAsync();
+        
+        return await convert.Files.First().FileStreamAsync();
+    }
+
+    public async Task<Stream> GetPdfFromWordAsync(Stream wordStream, string wordFileName, string wordExtension)
+    {
+        if (wordExtension is not "doc" and not "docx")
+        {
+            throw new PdfConvertException($"Cannot convert file from {wordExtension} to pdf");
+        }
+        
+        var convertApi = new ConvertApi(_pdfConvertOptions.ApiSecretKey);
+        var convert = await convertApi.ConvertAsync(wordExtension, "pdf",
+            new ConvertApiFileParam(wordStream, wordFileName)
+        );
+
         return await convert.Files.First().FileStreamAsync();
     }
 }

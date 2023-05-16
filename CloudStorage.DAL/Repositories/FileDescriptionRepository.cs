@@ -54,6 +54,7 @@ public class FileDescriptionRepository : EfRepository<FileDescriptionDbModel>, I
     public IQueryable<FileDescriptionDbModel> GetAllFilesAsQueryable(string email)
     {
         return Table.AsNoTracking()
+            .Where(f=>f.UploadedBy == email)
             .Include(file => file.ThumbnailInfo);
     }
 

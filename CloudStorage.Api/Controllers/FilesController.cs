@@ -3,9 +3,11 @@ using AutoMapper;
 using CloudStorage.Api.Dtos.Request;
 using CloudStorage.Api.Dtos.Response;
 using CloudStorage.Api.Filters;
+using CloudStorage.Api.Helpers;
 using CloudStorage.Api.Services;
 using CloudStorage.BLL.Models;
 using CloudStorage.BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
@@ -14,7 +16,7 @@ namespace CloudStorage.Api.Controllers;
 
 [ApiController]
 [Route("api/files/")]
-//[Authorize]
+[Authorize]
 public class FilesController : ControllerBase
 {
     private const long MaxFileSize = 10_000_000_000;
@@ -92,16 +94,31 @@ public class FilesController : ControllerBase
     {
         var decodedPath = archiveFilePath.Replace("%2F", "/");
 
+        var extension = Path.GetExtension(archiveFilePath)[1..];
+        var name = Path.GetFileName(archiveFilePath);
+        
         var (_, contentType, data) = await _cloudStorageManager.GetArchiveFileContent(fileId, decodedPath);
 
-        return new FileStreamResult(data, $"{contentType}; charset=utf-8");
+        Stream fileStream;
+        
+        if (extension is "doc" or "docx")
+        {
+            contentType = "application/pdf";
+            fileStream = await _wordToPdfConverter.GetPdfFromWordAsync(data, name, extension);
+        }
+        else
+        {
+            fileStream = data;
+        }
+        
+        return new FileStreamResult(fileStream ?? Stream.Null, $"{contentType}; charset=utf-8");
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Stream>> GetFileContent([FromRoute] int id)
     {
         var fileDescription = await _cloudStorageManager.GetFileDescriptionByIdAsync(id);
-
+        
         //var (stream, contentType, downloadName) = await _cloudStorageManager.GetFileStreamAsync(id);
 
         var extensions = new FileExtensionContentTypeProvider().Mappings
@@ -114,22 +131,41 @@ public class FilesController : ControllerBase
         if (extensions.Contains(".doc") || extensions.Contains(".docx"))
         {
             stream = await _wordToPdfConverter.GetPdfFromWordAsync(id);
-            contentType = "application/pdf";
+            Response.Headers.ContentType = contentType = "application/pdf";
         }
         else
         {
             var (data, type, _) = await _cloudStorageManager.GetFileStreamAsync(id);
             stream = data;
-            contentType = type;
+            Response.Headers.ContentType = contentType = type;
         }
 
         var base64FileName = Convert.ToBase64String(Encoding.UTF8.GetBytes(fileDescription.ProvidedName));
         Response.Headers.ContentDisposition = $"inline; filename={base64FileName}";
-        
+
         return new FileStreamResult(stream, $"{contentType}; charset=utf-8");
     }
 
+    [HttpGet("is-displayable-file")]
+    public bool IsDisplayableFile([FromQuery] string contentType)
+    {
+        return DisplayableContentType.IsDisplayable(contentType);
+    }
+
+    [HttpGet("is-displayable-archive-file")]
+    public bool IsArchiveFileDisplayable([FromQuery] string archiveFilePath)
+    {
+        var extension = Path.GetExtension(archiveFilePath);
+        var contentType = new FileExtensionContentTypeProvider()
+            .TryGetContentType(extension, out var type)
+            ? type
+            : string.Empty;
+
+        return contentType != string.Empty && DisplayableContentType.IsDisplayable(contentType);
+    }
+
     [HttpGet("download/{fileId:int}")]
+    [AllowAnonymous]
     public async Task<ActionResult<Stream?>> DownloadFile(int fileId)
     {
         var (data, contentType, downloadName) = await _cloudStorageManager.GetFileStreamAsync(fileId);
