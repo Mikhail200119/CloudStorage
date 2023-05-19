@@ -288,7 +288,7 @@ public class CloudStorageManager : ICloudStorageManager
 
         var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read, false, Encoding.GetEncoding("cp866"));
 
-        var entry = zipArchive.Entries.SingleOrDefault(entry => entry.Name == archiveFilePath);
+        var entry = zipArchive.Entries.SingleOrDefault(entry => entry.FullName == archiveFilePath);
 
         var contentType = new FileExtensionContentTypeProvider().TryGetContentType(archiveFilePath, out var type) ? type : "image/png";
         

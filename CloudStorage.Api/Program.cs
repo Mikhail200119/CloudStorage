@@ -101,9 +101,7 @@ builder.WebHost.ConfigureServices(services =>
     services.Configure<FileStorageOptions>(builder.Configuration.GetSection(nameof(FileStorageOptions)));
     services.Configure<ArchiveOptions>(builder.Configuration.GetSection(nameof(ArchiveOptions)));
     services.Configure<PdfConvertOptions>(builder.Configuration.GetSection(nameof(PdfConvertOptions)));
-
-    //services.Configure<FileEncryptionOptions>(builder.Configuration.GetSection(nameof(FileEncryptionOptions)));
-
+    
     services.AddAutoMapper(
         typeof(FilesMappingProfile),
         typeof(FilesProfile));
